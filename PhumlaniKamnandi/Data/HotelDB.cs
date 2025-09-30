@@ -187,6 +187,7 @@ namespace PhumlaniKamnandi.Data
                     switch (atable)
                     {
                         case table1: // Booker
+                            bookers.Clear();
                             aBooker = new Booker
                             {
                                 BookingID = Convert.ToInt32(myRow["bookingID"]),
@@ -198,6 +199,7 @@ namespace PhumlaniKamnandi.Data
                             break;
 
                         case table2: // RoomAccount
+                            roomAccounts.Clear();
                             aRoomAccount = new RoomAccount
                             {
                                 AccountID = Convert.ToInt32(myRow["accountID"]),
@@ -208,6 +210,7 @@ namespace PhumlaniKamnandi.Data
                             break;
 
                         case table3: // Rooms
+                            rooms.Clear();
                             aRoom = new Room
                             {
                                 RoomID = Convert.ToInt32(myRow["roomID"]),
@@ -219,6 +222,7 @@ namespace PhumlaniKamnandi.Data
                             break;
 
                         case table4: // Reservation
+                            reservations.Clear();
                             aReservation = new Reservation
                             {
                                 ReservationID = Convert.ToInt32(myRow["reservationID"]),
@@ -232,6 +236,7 @@ namespace PhumlaniKamnandi.Data
                             break;
 
                         case table5: // Guest
+                            guests.Clear();
                             aGuest = new Guest
                             {
                                 GuestID = Convert.ToInt32(myRow["guestID"]),
@@ -247,6 +252,7 @@ namespace PhumlaniKamnandi.Data
                             break;
 
                         case table6: // Employee
+                            employees.Clear();
                             anEmp = new Employee
                             {
                                 EmpID = Convert.ToInt32(myRow["empID"]),
@@ -590,38 +596,39 @@ namespace PhumlaniKamnandi.Data
             switch (hotel_obj.Type)
             {
                 case HotelObject.HotelObjectType.Booker:
-                    param = new SqlParameter("@BookingID", SqlDbType.Int);
-
+                    param = new SqlParameter("@BookingID", SqlDbType.Int,4,"bookingID");
+                    param.SourceVersion = DataRowVersion.Original;
                     daMain.DeleteCommand.Parameters.Add(param);
+
                     break;
 
                 case HotelObject.HotelObjectType.RoomAccount:
-                    param = new SqlParameter("@AccountID", SqlDbType.Int);
-
+                    param = new SqlParameter("@AccountID", SqlDbType.Int, 4,"accountID" );
+                    param.SourceVersion = DataRowVersion.Original;
                     daMain.DeleteCommand.Parameters.Add(param);
                     break;
 
                 case HotelObject.HotelObjectType.Room:
-                    param = new SqlParameter("@RoomID", SqlDbType.Int);
-
+                    param = new SqlParameter("@RoomID", SqlDbType.Int, 4, "roomID");
+                    param.SourceVersion = DataRowVersion.Original;
                     daMain.DeleteCommand.Parameters.Add(param);
                     break;
 
                 case HotelObject.HotelObjectType.Reservation:
-                    param = new SqlParameter("@ReservationID", SqlDbType.Int);
-
+                    param = new SqlParameter("@ReservationID", SqlDbType.Int, 4, "reservationID");
+                    param.SourceVersion = DataRowVersion.Original;
                     daMain.DeleteCommand.Parameters.Add(param);
                     break;
 
                 case HotelObject.HotelObjectType.Guest:
-                    param = new SqlParameter("@GuestID", SqlDbType.Int);
-
+                    param = new SqlParameter("@GuestID", SqlDbType.Int, 4, "guestID");
+                    param.SourceVersion = DataRowVersion.Original;
                     daMain.DeleteCommand.Parameters.Add(param);
                     break;
 
                 case HotelObject.HotelObjectType.Employee:
-                    param = new SqlParameter("@EmpID", SqlDbType.Int);
-
+                    param = new SqlParameter("@EmpID", SqlDbType.Int, 4, "empID");
+                    param.SourceVersion = DataRowVersion.Original;
                     daMain.DeleteCommand.Parameters.Add(param);
                     break;
             }
@@ -952,6 +959,7 @@ namespace PhumlaniKamnandi.Data
                         "DELETE FROM Booker WHERE bookingID = @BookingID",
                         cnMain
                     );
+                    
                     break;
 
                 case HotelObject.HotelObjectType.RoomAccount:
@@ -963,7 +971,7 @@ namespace PhumlaniKamnandi.Data
 
                 case HotelObject.HotelObjectType.Room:
                     daMain.DeleteCommand = new SqlCommand(
-                        "DELETE FROM Rooms WHERE roomID = @RoomID",
+                        "DELETE FROM Room WHERE roomID = @RoomID",
                         cnMain
                     );
                     break;
@@ -989,6 +997,8 @@ namespace PhumlaniKamnandi.Data
                     );
                     break;
             }
+
+            Build_DELETE_Parameters( hotel_obj );
         }
         #endregion
 
@@ -1014,6 +1024,12 @@ namespace PhumlaniKamnandi.Data
                     FillRow(aRow, hotel_obj);
 
                     break;
+                case DB.DBOperation.Delete:
+                    aRow = dsMain.Tables[dataTable].Rows[FindRow(hotel_obj, dataTable)];
+                    aRow.Delete();
+                    break;
+
+
             }
         }
 
@@ -1022,7 +1038,7 @@ namespace PhumlaniKamnandi.Data
             bool success = true;
             Create_INSERT_Command(hotel_obj);
             Create_UPDATE_Command(hotel_obj);
-            //Create_DELETE_Command(hotel_obj);
+            Create_DELETE_Command(hotel_obj);
 
             switch (hotel_obj.Type)
             {
