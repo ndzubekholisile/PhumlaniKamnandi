@@ -15,10 +15,10 @@ namespace PhumlaniKamnandi.Presentation
     {
         private HotelDB hotelDB;
 
-        public ReportsDashboard(HotelDB hDB)
+        public ReportsDashboard()
         {
             InitializeComponent();
-            hotelDB = hDB;
+            hotelDB = new HotelDB();
             InitializeForm();
         }
 

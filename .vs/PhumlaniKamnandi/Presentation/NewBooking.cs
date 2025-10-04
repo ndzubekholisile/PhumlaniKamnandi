@@ -18,10 +18,10 @@ namespace PhumlaniKamnandi.Presentation
         private Guest selectedGuest;
         private bool isAvailabilityChecked = false;
 
-        public NewBooking(HotelDB hDB)
+        public NewBooking()
         {
             InitializeComponent();
-            hotelDB =  hDB;
+            hotelDB = new HotelDB();
             InitializeForm();
         }
 

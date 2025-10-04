@@ -19,10 +19,10 @@ namespace PhumlaniKamnandi.Presentation
         private Guest currentGuest;
         private bool isEditMode = false;
 
-        public BookingDetails(int reservationId, HotelDB hDB)
+        public BookingDetails(int reservationId)
         {
             InitializeComponent();
-            hotelDB = hDB;
+            hotelDB = new HotelDB();
             LoadBookingDetails(reservationId);
             SetReadOnlyMode(true);
         }

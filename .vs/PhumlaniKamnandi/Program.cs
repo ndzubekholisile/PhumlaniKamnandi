@@ -16,10 +16,9 @@ namespace PhumlaniKamnandi
         [STAThread]
         static void Main()
         {
-            HotelDB hotelDB = new HotelDB();
             Application.EnableVisualStyles();
             Application.SetCompatibleTextRenderingDefault(false);
-            Application.Run(new MainDashboard(hotelDB));
+            Application.Run(new EmployeeLogin());
         }
     }
 }

@@ -16,10 +16,10 @@ namespace PhumlaniKamnandi.Presentation
     {
         private HotelDB hotelDB;
 
-        public ManageBookings(HotelDB hDB)
+        public ManageBookings()
         {
             InitializeComponent();
-            hotelDB = hDB;
+            hotelDB = new HotelDB();
             LoadBookings();
         }
 
@@ -142,7 +142,7 @@ namespace PhumlaniKamnandi.Presentation
                 var selectedRow = dgvBookings.SelectedRows[0];
                 int reservationId = (int)selectedRow.Cells["ReservationID"].Value;
 
-                var bookingDetailsForm = new BookingDetails(reservationId, hotelDB);
+                var bookingDetailsForm = new BookingDetails(reservationId);
                 bookingDetailsForm.ShowDialog();
                 LoadBookings(); // This will refresh after there are potential changes made
             }

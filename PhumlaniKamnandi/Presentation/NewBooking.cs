@@ -1,6 +1,7 @@
 ﻿using PhumlaniKamnandi.Business;
 using PhumlaniKamnandi.Data;
 using System;
+using static PhumlaniKamnandi.Data.DB;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data;
@@ -134,52 +135,214 @@ namespace PhumlaniKamnandi.Presentation
         {
             try
             {
-                Guest guest;
-
-                if (rbNewGuest.Checked)
+                // Validate booking data before proceeding
+                if (!ValidateBookingData())
                 {
-                    // This will create a new guest
-                    guest = new Guest
+                    return;
+                }
+                
+                // Calculate deposit amount
+                var nights = (dtpCheckOut.Value - dtpCheckIn.Value).Days;
+                var totalCost = nights * 150.00m; // Assuming $150 per night
+                var deposit = totalCost * 0.20m; // 20% deposit
+
+                // Show payment form for deposit
+                var paymentForm = new Payment(deposit);
+                if (paymentForm.ShowDialog() == DialogResult.OK && paymentForm.PaymentSuccessful)
+                {
+                    Guest guest;
+
+                    if (rbNewGuest.Checked)
                     {
-                        Name = txtGuestName.Text.Trim(),
-                        Telephone = txtTelephone.Text.Trim(),
-                        AddressLine1 = txtAddress1.Text.Trim(),
-                        AddressLine2 = txtAddress2.Text.Trim(),
-                        PostalCode = txtPostalCode.Text.Trim(),
+                        // Validate and create new guest
+                        if (!ValidateGuestData())
+                        {
+                            return;
+                        }
+                        
+                        guest = new Guest
+                        {
+                            Name = SanitizeInput(txtGuestName.Text.Trim()),
+                            Telephone = SanitizeInput(txtTelephone.Text.Trim()),
+                            AddressLine1 = SanitizeInput(txtAddress1.Text.Trim()),
+                            AddressLine2 = SanitizeInput(txtAddress2.Text.Trim()),
+                            PostalCode = SanitizeInput(txtPostalCode.Text.Trim()),
+                            DateBooked = DateTime.Now
+                        };
+                    }
+                    else
+                    {
+                        if (selectedGuest == null)
+                        {
+                            MessageBox.Show("Please select a guest.", "Validation Error", 
+                                          MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                            return;
+                        }
+                        guest = selectedGuest;
+                    }
+
+                    // Create reservation
+                    var reservation = new Reservation
+                    {
+                        CheckInDate = dtpCheckIn.Value.Date,
+                        CheckOutDate = dtpCheckOut.Value.Date,
+                        Status = "confirmed",
                         DateBooked = DateTime.Now
                     };
+
+                    // Save to database with proper error handling
+                    if (!SaveBookingToDatabase(guest, reservation))
+                    {
+                        MessageBox.Show("Failed to save booking to database. Please try again.", 
+                                      "Database Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                        return;
+                    }
+
+                    MessageBox.Show("Booking confirmed and payment processed successfully!", 
+                                  "Success", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                    this.DialogResult = DialogResult.OK;
+                    this.Close();
                 }
                 else
                 {
-                    guest = selectedGuest;
+                    MessageBox.Show("Booking cancelled - payment was not completed.", 
+                                  "Booking Cancelled", MessageBoxButtons.OK, MessageBoxIcon.Information);
                 }
-
-                // This will create a reservation
-                var reservation = new Reservation
-                {
-                    CheckInDate = dtpCheckIn.Value,
-                    CheckOutDate = dtpCheckOut.Value,
-                    Status = "confirmed",
-                    DateBooked = DateTime.Now
-                };
-
-                // This will make sure there are saves to the database
-                var hotelObj = new HotelDB.HotelObject(guest);
-                hotelDB.DataSetChange(hotelObj, HotelDB.DBOperation.Add);
-                hotelDB.UpdateDataSource(hotelObj);
-
-                hotelObj = new HotelDB.HotelObject(reservation);
-                hotelDB.DataSetChange(hotelObj, HotelDB.DBOperation.Add);
-                hotelDB.UpdateDataSource(hotelObj);
-
-                MessageBox.Show("Booking confirmed successfully!", "Success", MessageBoxButtons.OK, MessageBoxIcon.Information);
-                this.DialogResult = DialogResult.OK;
-                this.Close();
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"Error creating booking: {ex.Message}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                MessageBox.Show($"Error creating booking: {ex.Message}\n\nStack Trace: {ex.StackTrace}", 
+                              "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
+        }
+        
+        private bool ValidateBookingData()
+        {
+            // Validate dates
+            if (dtpCheckIn.Value.Date < DateTime.Today)
+            {
+                MessageBox.Show("Check-in date cannot be in the past.", "Validation Error", 
+                              MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                return false;
+            }
+            
+            if (dtpCheckOut.Value.Date <= dtpCheckIn.Value.Date)
+            {
+                MessageBox.Show("Check-out date must be after check-in date.", "Validation Error", 
+                              MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                return false;
+            }
+            
+            // Validate availability was checked
+            if (!isAvailabilityChecked)
+            {
+                MessageBox.Show("Please check room availability first.", "Validation Error", 
+                              MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                return false;
+            }
+            
+            return true;
+        }
+        
+        private bool ValidateGuestData()
+        {
+            // Validate guest name
+            if (string.IsNullOrWhiteSpace(txtGuestName.Text))
+            {
+                MessageBox.Show("Please enter guest name.", "Validation Error", 
+                              MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                txtGuestName.Focus();
+                return false;
+            }
+            
+            if (txtGuestName.Text.Trim().Length < 2)
+            {
+                MessageBox.Show("Guest name must be at least 2 characters.", "Validation Error", 
+                              MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                txtGuestName.Focus();
+                return false;
+            }
+            
+            // Validate telephone
+            if (string.IsNullOrWhiteSpace(txtTelephone.Text))
+            {
+                MessageBox.Show("Please enter telephone number.", "Validation Error", 
+                              MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                txtTelephone.Focus();
+                return false;
+            }
+            
+            string phone = txtTelephone.Text.Trim().Replace(" ", "").Replace("-", "").Replace("(", "").Replace(")", "");
+            if (phone.Length < 10)
+            {
+                MessageBox.Show("Please enter a valid telephone number (at least 10 digits).", 
+                              "Validation Error", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                txtTelephone.Focus();
+                return false;
+            }
+            
+            // Validate address
+            if (string.IsNullOrWhiteSpace(txtAddress1.Text))
+            {
+                MessageBox.Show("Please enter address line 1.", "Validation Error", 
+                              MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                txtAddress1.Focus();
+                return false;
+            }
+            
+            // Validate postal code
+            if (string.IsNullOrWhiteSpace(txtPostalCode.Text))
+            {
+                MessageBox.Show("Please enter postal code.", "Validation Error", 
+                              MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                txtPostalCode.Focus();
+                return false;
+            }
+            
+            return true;
+        }
+        
+        private bool SaveBookingToDatabase(Guest guest, Reservation reservation)
+        {
+            try
+            {
+                if (hotelDB == null)
+                {
+                    MessageBox.Show("Database connection error.", "Error", 
+                                  MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    return false;
+                }
+                
+                // Save guest
+                var guestObj = new HotelDB.HotelObject(guest);
+                hotelDB.DataSetChange(guestObj, DB.DBOperation.Add);
+                
+                if (!hotelDB.UpdateDataSource(guestObj))
+                {
+                    return false;
+                }
+
+                // Save reservation
+                var reservationObj = new HotelDB.HotelObject(reservation);
+                hotelDB.DataSetChange(reservationObj, DB.DBOperation.Add);
+                
+                return hotelDB.UpdateDataSource(reservationObj);
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Database error: {ex.Message}", "Error", 
+                              MessageBoxButtons.OK, MessageBoxIcon.Error);
+                return false;
+            }
+        }
+        
+        private string SanitizeInput(string input)
+        {
+            if (string.IsNullOrEmpty(input))
+                return string.Empty;
+                
+            // Remove potentially dangerous characters while preserving normal text
+            return System.Text.RegularExpressions.Regex.Replace(input, @"[<>""';]", "");
         }
 
         private void btnCancel_Click(object sender, EventArgs e)

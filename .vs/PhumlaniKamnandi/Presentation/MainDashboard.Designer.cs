@@ -31,163 +31,153 @@ namespace PhumlaniKamnandi.Presentation
         /// </summary>
         private void InitializeComponent()
         {
-            components = new System.ComponentModel.Container();
-            lblTitle = new Label();
-            lblWelcome = new Label();
-            lblDateTime = new Label();
-            btnMakeNewBooking = new Button();
-            btnManageBookings = new Button();
-            btnViewReports = new Button();
-            pnlOccupancy = new Panel();
-            lblOccupancy = new Label();
-            timerDateTime = new System.Windows.Forms.Timer(components);
-            pnlMain = new Panel();
-            pnlMain.SuspendLayout();
-            SuspendLayout();
+            this.components = new System.ComponentModel.Container();
+            this.lblTitle = new System.Windows.Forms.Label();
+            this.lblWelcome = new System.Windows.Forms.Label();
+            this.lblDateTime = new System.Windows.Forms.Label();
+            this.btnMakeNewBooking = new System.Windows.Forms.Button();
+            this.btnManageBookings = new System.Windows.Forms.Button();
+            this.btnViewReports = new System.Windows.Forms.Button();
+            this.pnlOccupancy = new System.Windows.Forms.Panel();
+            this.lblOccupancy = new System.Windows.Forms.Label();
+            this.timerDateTime = new System.Windows.Forms.Timer(this.components);
+            this.pnlMain = new System.Windows.Forms.Panel();
+            this.pnlMain.SuspendLayout();
+            this.SuspendLayout();
             // 
             // lblTitle
             // 
-            lblTitle.AutoSize = true;
-            lblTitle.Font = new Font("Segoe UI", 24F, FontStyle.Bold);
-            lblTitle.ForeColor = Color.FromArgb(0, 64, 128);
-            lblTitle.Location = new Point(12, 0);
-            lblTitle.Name = "lblTitle";
-            lblTitle.Size = new Size(537, 54);
-            lblTitle.TabIndex = 0;
-            lblTitle.Text = "Hotel Management System";
+            this.lblTitle.AutoSize = true;
+            this.lblTitle.Font = new System.Drawing.Font("Segoe UI", 24F, System.Drawing.FontStyle.Bold);
+            this.lblTitle.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(0)))), ((int)(((byte)(64)))), ((int)(((byte)(128)))));
+            this.lblTitle.Location = new System.Drawing.Point(12, 0);
+            this.lblTitle.Name = "lblTitle";
+            this.lblTitle.Size = new System.Drawing.Size(537, 54);
+            this.lblTitle.TabIndex = 0;
+            this.lblTitle.Text = "Hotel Management System";
             // 
             // lblWelcome
             // 
-            lblWelcome.AutoSize = true;
-            lblWelcome.Font = new Font("Segoe UI", 14F);
-            lblWelcome.ForeColor = Color.FromArgb(64, 64, 64);
-            lblWelcome.Location = new Point(12, 54);
-            lblWelcome.Name = "lblWelcome";
-            lblWelcome.Size = new Size(521, 32);
-            lblWelcome.TabIndex = 1;
-            lblWelcome.Text = "Welcome to the Hotel Management Dashboard";
+            this.lblWelcome.AutoSize = true;
+            this.lblWelcome.Font = new System.Drawing.Font("Segoe UI", 14F);
+            this.lblWelcome.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
+            this.lblWelcome.Location = new System.Drawing.Point(12, 54);
+            this.lblWelcome.Name = "lblWelcome";
+            this.lblWelcome.Size = new System.Drawing.Size(521, 32);
+            this.lblWelcome.TabIndex = 1;
+            this.lblWelcome.Text = "Welcome to the Hotel Management Dashboard";
             // 
             // lblDateTime
             // 
-            lblDateTime.AutoSize = true;
-            lblDateTime.Font = new Font("Segoe UI", 10F);
-            lblDateTime.ForeColor = Color.FromArgb(128, 128, 128);
-            lblDateTime.Location = new Point(743, 53);
-            lblDateTime.Name = "lblDateTime";
-            lblDateTime.Size = new Size(286, 23);
-            lblDateTime.TabIndex = 2;
-            lblDateTime.Text = "Monday, January 01, 2024 - 12:00:00";
+            this.lblDateTime.AutoSize = true;
+            this.lblDateTime.Font = new System.Drawing.Font("Segoe UI", 10F);
+            this.lblDateTime.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(128)))), ((int)(((byte)(128)))), ((int)(((byte)(128)))));
+            this.lblDateTime.Location = new System.Drawing.Point(743, 42);
+            this.lblDateTime.Name = "lblDateTime";
+            this.lblDateTime.Size = new System.Drawing.Size(286, 23);
+            this.lblDateTime.TabIndex = 2;
+            this.lblDateTime.Text = "Monday, January 01, 2024 - 12:00:00";
             // 
             // btnMakeNewBooking
             // 
-            btnMakeNewBooking.BackColor = Color.FromArgb(0, 122, 204);
-            btnMakeNewBooking.FlatAppearance.BorderSize = 0;
-            btnMakeNewBooking.FlatStyle = FlatStyle.Flat;
-            btnMakeNewBooking.Font = new Font("Segoe UI", 12F, FontStyle.Bold);
-            btnMakeNewBooking.ForeColor = Color.White;
-            btnMakeNewBooking.Location = new Point(171, 200);
-            btnMakeNewBooking.Margin = new Padding(3, 4, 3, 4);
-            btnMakeNewBooking.Name = "btnMakeNewBooking";
-            btnMakeNewBooking.Size = new Size(286, 107);
-            btnMakeNewBooking.TabIndex = 3;
-            btnMakeNewBooking.Text = "Make New Booking";
-            btnMakeNewBooking.UseVisualStyleBackColor = false;
-            btnMakeNewBooking.Click += btnMakeNewBooking_Click;
+            this.btnMakeNewBooking.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(0)))), ((int)(((byte)(122)))), ((int)(((byte)(204)))));
+            this.btnMakeNewBooking.FlatAppearance.BorderSize = 0;
+            this.btnMakeNewBooking.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
+            this.btnMakeNewBooking.Font = new System.Drawing.Font("Segoe UI", 12F, System.Drawing.FontStyle.Bold);
+            this.btnMakeNewBooking.ForeColor = System.Drawing.Color.White;
+            this.btnMakeNewBooking.Location = new System.Drawing.Point(171, 160);
+            this.btnMakeNewBooking.Name = "btnMakeNewBooking";
+            this.btnMakeNewBooking.Size = new System.Drawing.Size(286, 86);
+            this.btnMakeNewBooking.TabIndex = 3;
+            this.btnMakeNewBooking.Text = "Make New Booking";
+            this.btnMakeNewBooking.UseVisualStyleBackColor = false;
             // 
             // btnManageBookings
             // 
-            btnManageBookings.BackColor = Color.FromArgb(34, 139, 34);
-            btnManageBookings.FlatAppearance.BorderSize = 0;
-            btnManageBookings.FlatStyle = FlatStyle.Flat;
-            btnManageBookings.Font = new Font("Segoe UI", 12F, FontStyle.Bold);
-            btnManageBookings.ForeColor = Color.White;
-            btnManageBookings.Location = new Point(171, 333);
-            btnManageBookings.Margin = new Padding(3, 4, 3, 4);
-            btnManageBookings.Name = "btnManageBookings";
-            btnManageBookings.Size = new Size(286, 107);
-            btnManageBookings.TabIndex = 4;
-            btnManageBookings.Text = "Manage Existing Bookings";
-            btnManageBookings.UseVisualStyleBackColor = false;
-            btnManageBookings.Click += btnManageBookings_Click;
+            this.btnManageBookings.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(34)))), ((int)(((byte)(139)))), ((int)(((byte)(34)))));
+            this.btnManageBookings.FlatAppearance.BorderSize = 0;
+            this.btnManageBookings.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
+            this.btnManageBookings.Font = new System.Drawing.Font("Segoe UI", 12F, System.Drawing.FontStyle.Bold);
+            this.btnManageBookings.ForeColor = System.Drawing.Color.White;
+            this.btnManageBookings.Location = new System.Drawing.Point(171, 266);
+            this.btnManageBookings.Name = "btnManageBookings";
+            this.btnManageBookings.Size = new System.Drawing.Size(286, 86);
+            this.btnManageBookings.TabIndex = 4;
+            this.btnManageBookings.Text = "Manage Existing Bookings";
+            this.btnManageBookings.UseVisualStyleBackColor = false;
             // 
             // btnViewReports
             // 
-            btnViewReports.BackColor = Color.FromArgb(255, 140, 0);
-            btnViewReports.FlatAppearance.BorderSize = 0;
-            btnViewReports.FlatStyle = FlatStyle.Flat;
-            btnViewReports.Font = new Font("Segoe UI", 12F, FontStyle.Bold);
-            btnViewReports.ForeColor = Color.White;
-            btnViewReports.Location = new Point(171, 467);
-            btnViewReports.Margin = new Padding(3, 4, 3, 4);
-            btnViewReports.Name = "btnViewReports";
-            btnViewReports.Size = new Size(286, 107);
-            btnViewReports.TabIndex = 5;
-            btnViewReports.Text = "View Reports";
-            btnViewReports.UseVisualStyleBackColor = false;
-            btnViewReports.Click += btnViewReports_Click;
+            this.btnViewReports.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(255)))), ((int)(((byte)(140)))), ((int)(((byte)(0)))));
+            this.btnViewReports.FlatAppearance.BorderSize = 0;
+            this.btnViewReports.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
+            this.btnViewReports.Font = new System.Drawing.Font("Segoe UI", 12F, System.Drawing.FontStyle.Bold);
+            this.btnViewReports.ForeColor = System.Drawing.Color.White;
+            this.btnViewReports.Location = new System.Drawing.Point(171, 374);
+            this.btnViewReports.Name = "btnViewReports";
+            this.btnViewReports.Size = new System.Drawing.Size(286, 86);
+            this.btnViewReports.TabIndex = 5;
+            this.btnViewReports.Text = "View Reports";
+            this.btnViewReports.UseVisualStyleBackColor = false;
             // 
             // pnlOccupancy
             // 
-            pnlOccupancy.BackColor = Color.FromArgb(192, 255, 192);
-            pnlOccupancy.BorderStyle = BorderStyle.FixedSingle;
-            pnlOccupancy.Location = new Point(571, 200);
-            pnlOccupancy.Margin = new Padding(3, 4, 3, 4);
-            pnlOccupancy.Name = "pnlOccupancy";
-            pnlOccupancy.Size = new Size(343, 133);
-            pnlOccupancy.TabIndex = 6;
+            this.pnlOccupancy.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(192)))), ((int)(((byte)(255)))), ((int)(((byte)(192)))));
+            this.pnlOccupancy.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
+            this.pnlOccupancy.Location = new System.Drawing.Point(571, 160);
+            this.pnlOccupancy.Name = "pnlOccupancy";
+            this.pnlOccupancy.Size = new System.Drawing.Size(343, 107);
+            this.pnlOccupancy.TabIndex = 6;
             // 
             // lblOccupancy
             // 
-            lblOccupancy.AutoSize = true;
-            lblOccupancy.Font = new Font("Segoe UI", 14F, FontStyle.Bold);
-            lblOccupancy.ForeColor = Color.FromArgb(0, 64, 0);
-            lblOccupancy.Location = new Point(153, 113);
-            lblOccupancy.Name = "lblOccupancy";
-            lblOccupancy.Size = new Size(315, 32);
-            lblOccupancy.TabIndex = 0;
-            lblOccupancy.Text = "Today's Occupancy: 75.5%";
+            this.lblOccupancy.AutoSize = true;
+            this.lblOccupancy.Font = new System.Drawing.Font("Segoe UI", 14F, System.Drawing.FontStyle.Bold);
+            this.lblOccupancy.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(0)))), ((int)(((byte)(64)))), ((int)(((byte)(0)))));
+            this.lblOccupancy.Location = new System.Drawing.Point(153, 90);
+            this.lblOccupancy.Name = "lblOccupancy";
+            this.lblOccupancy.Size = new System.Drawing.Size(315, 32);
+            this.lblOccupancy.TabIndex = 0;
+            this.lblOccupancy.Text = "Today\'s Occupancy: 75.5%";
             // 
             // timerDateTime
             // 
-            timerDateTime.Enabled = true;
-            timerDateTime.Interval = 1000;
-            timerDateTime.Tick += timerDateTime_Tick;
+            this.timerDateTime.Enabled = true;
+            this.timerDateTime.Interval = 1000;
             // 
             // pnlMain
             // 
-            pnlMain.BackColor = Color.FromArgb(240, 248, 255);
-            pnlMain.Controls.Add(lblOccupancy);
-            pnlMain.Controls.Add(pnlOccupancy);
-            pnlMain.Controls.Add(btnViewReports);
-            pnlMain.Controls.Add(btnManageBookings);
-            pnlMain.Controls.Add(btnMakeNewBooking);
-            pnlMain.Controls.Add(lblDateTime);
-            pnlMain.Controls.Add(lblWelcome);
-            pnlMain.Controls.Add(lblTitle);
-            pnlMain.Dock = DockStyle.Fill;
-            pnlMain.Location = new Point(0, 0);
-            pnlMain.Margin = new Padding(3, 4, 3, 4);
-            pnlMain.Name = "pnlMain";
-            pnlMain.Size = new Size(1074, 800);
-            pnlMain.TabIndex = 0;
+            this.pnlMain.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(240)))), ((int)(((byte)(248)))), ((int)(((byte)(255)))));
+            this.pnlMain.Controls.Add(this.lblOccupancy);
+            this.pnlMain.Controls.Add(this.pnlOccupancy);
+            this.pnlMain.Controls.Add(this.btnViewReports);
+            this.pnlMain.Controls.Add(this.btnManageBookings);
+            this.pnlMain.Controls.Add(this.btnMakeNewBooking);
+            this.pnlMain.Controls.Add(this.lblDateTime);
+            this.pnlMain.Controls.Add(this.lblWelcome);
+            this.pnlMain.Controls.Add(this.lblTitle);
+            this.pnlMain.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.pnlMain.Location = new System.Drawing.Point(0, 0);
+            this.pnlMain.Name = "pnlMain";
+            this.pnlMain.Size = new System.Drawing.Size(1074, 640);
+            this.pnlMain.TabIndex = 0;
             // 
             // MainDashboard
             // 
-            AutoScaleDimensions = new SizeF(8F, 20F);
-            AutoScaleMode = AutoScaleMode.Font;
-            BackColor = Color.White;
-            ClientSize = new Size(1074, 800);
-            Controls.Add(pnlMain);
-            FormBorderStyle = FormBorderStyle.FixedSingle;
-            Margin = new Padding(3, 4, 3, 4);
-            MaximizeBox = false;
-            MinimizeBox = false;
-            Name = "MainDashboard";
-            StartPosition = FormStartPosition.CenterScreen;
-            Text = "Hotel Management System - Main Dashboard";
-            pnlMain.ResumeLayout(false);
-            pnlMain.PerformLayout();
-            ResumeLayout(false);
+            this.AutoScaleDimensions = new System.Drawing.SizeF(8F, 16F);
+            this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
+            this.BackColor = System.Drawing.Color.White;
+            this.ClientSize = new System.Drawing.Size(1074, 640);
+            this.Controls.Add(this.pnlMain);
+            this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedSingle;
+            this.MaximizeBox = false;
+            this.MinimizeBox = false;
+            this.Name = "MainDashboard";
+            this.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen;
+            this.Text = "Hotel Management System - Main Dashboard";
+            this.pnlMain.ResumeLayout(false);
+            this.pnlMain.PerformLayout();
+            this.ResumeLayout(false);
 
         }
 

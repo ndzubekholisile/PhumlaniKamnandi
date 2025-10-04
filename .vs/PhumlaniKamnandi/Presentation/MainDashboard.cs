@@ -8,7 +8,6 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
-using PhumlaniKamnandi.Data;
 
 namespace PhumlaniKamnandi.Presentation
 {
@@ -16,10 +15,10 @@ namespace PhumlaniKamnandi.Presentation
     {
         private HotelDB hotelDB;
 
-        public MainDashboard(HotelDB hDB)
+        public MainDashboard()
         {
             InitializeComponent();
-            hotelDB = hDB;
+            hotelDB = new HotelDB();
             LoadDashboardData();
         }
 
@@ -50,21 +49,21 @@ namespace PhumlaniKamnandi.Presentation
 
         private void btnMakeNewBooking_Click(object sender, EventArgs e)
         {
-            var newBookingForm = new NewBooking(hotelDB);
+            var newBookingForm = new NewBooking();
             newBookingForm.ShowDialog();
             LoadDashboardData(); // ths will refresh the data after booking
         }
 
         private void btnManageBookings_Click(object sender, EventArgs e)
         {
-            var manageBookingsForm = new ManageBookings(hotelDB);
+            var manageBookingsForm = new ManageBookings();
             manageBookingsForm.ShowDialog();
             LoadDashboardData();
         }
 
         private void btnViewReports_Click(object sender, EventArgs e)
         {
-            var reportsForm = new ReportsDashboard(hotelDB);
+            var reportsForm = new ReportsDashboard();
             reportsForm.ShowDialog();
         }
 
