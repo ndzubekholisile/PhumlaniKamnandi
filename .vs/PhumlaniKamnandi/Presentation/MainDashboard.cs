@@ -131,5 +131,12 @@ namespace PhumlaniKamnandi.Presentation
         {
             lblDateTime.Text = DateTime.Now.ToString("dddd, MMMM dd, yyyy - HH:mm:ss");
         }
+
+        protected override void OnFormClosing(FormClosingEventArgs e)
+        {
+            // End session when dashboard closes
+            SessionManager.EndSession();
+            base.OnFormClosing(e);
+        }
     }
 }

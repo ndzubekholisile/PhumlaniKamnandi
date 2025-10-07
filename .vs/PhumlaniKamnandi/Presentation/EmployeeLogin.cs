@@ -16,38 +16,37 @@ namespace PhumlaniKamnandi.Presentation
 {
     public partial class EmployeeLogin : Form
     {
-        private EmployeeController employeeController;
         private int loginAttempts = 0;
         private const int MAX_LOGIN_ATTEMPTS = 3;
-        private const int MIN_USERNAME_LENGTH = 3;
-        private const int MAX_USERNAME_LENGTH = 50;
-        private const int MIN_PASSWORD_LENGTH = 6;
 
         public EmployeeLogin()
         {
             InitializeComponent();
             InitializeForm();
         }
-
         private void InitializeForm()
         {
             try
             {
-                employeeController = new EmployeeController();
-                
-                // Set focus to username field
+                // Set focus to username field for immediate typing
                 txtUsername.Focus();
                 
-                // Set password character
+                // Hide password characters for security
                 txtPassword.UseSystemPasswordChar = true;
                 
                 // Set max length for inputs
-                txtUsername.MaxLength = MAX_USERNAME_LENGTH;
+                txtUsername.MaxLength = 50;
                 txtPassword.MaxLength = 100;
                 
-                // Set enter key behavior
+                // Set enter key behavior (Enter = Login, Escape = Cancel)
                 this.AcceptButton = btnLogin;
                 this.CancelButton = btnCancel;
+                
+                // Hide error message initially
+                if (lblErrorMessage != null)
+                {
+                    lblErrorMessage.Visible = false;
+                }
             }
             catch (Exception ex)
             {
@@ -59,28 +58,54 @@ namespace PhumlaniKamnandi.Presentation
 
         private void btnLogin_Click(object sender, EventArgs e)
         {
-            if (ValidateInput())
+            // Step 1: Validate input fields
+            if (!ValidateInput())
             {
+                return; // Stop if validation fails
+            }
+            
+            // Step 2: Disable login button to prevent multiple clicks
+            btnLogin.Enabled = false;
+            lblErrorMessage.Visible = false;
+            
+            try
+            {
+                // Step 3: Authenticate user
                 if (AuthenticateUser())
                 {
-                    // Successful login - clear sensitive data
+                    // Step 4: Successful login - clear sensitive data
                     txtPassword.Clear();
+                    txtUsername.Clear();
                     
+                    // Step 5: Show success message briefly
+                    lblErrorMessage.ForeColor = Color.Green;
+                    lblErrorMessage.Text = "Login successful! Opening dashboard...";
+                    lblErrorMessage.Visible = true;
+                    Application.DoEvents();
+                    System.Threading.Thread.Sleep(500);
+                    
+                    // Step 6: Open Main Dashboard
                     this.Hide();
                     MainDashboard dashboard = new MainDashboard();
                     dashboard.ShowDialog();
+                    
+                    // Step 7: Close login form after dashboard closes
                     this.Close();
                 }
                 else
                 {
                     // Failed login
                     loginAttempts++;
+                    lblErrorMessage.ForeColor = Color.Red;
                     lblErrorMessage.Text = $"Invalid username or password. Attempts: {loginAttempts}/{MAX_LOGIN_ATTEMPTS}";
                     lblErrorMessage.Visible = true;
                     
                     // Clear password field for security
                     txtPassword.Clear();
                     txtPassword.Focus();
+                    
+                    // Re-enable login button
+                    btnLogin.Enabled = true;
                     
                     // Lock out after max attempts
                     if (loginAttempts >= MAX_LOGIN_ATTEMPTS)
@@ -91,31 +116,34 @@ namespace PhumlaniKamnandi.Presentation
                     }
                 }
             }
+            catch (Exception ex)
+            {
+                lblErrorMessage.ForeColor = Color.Red;
+                lblErrorMessage.Text = "An error occurred during login. Please try again.";
+                lblErrorMessage.Visible = true;
+                btnLogin.Enabled = true;
+                
+                MessageBox.Show($"Login error: {ex.Message}", "Error", 
+                              MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
         }
 
         private bool ValidateInput()
         {
             lblErrorMessage.Visible = false;
             
-            // Validate username using ValidationHelper
-            if (!ValidationHelper.IsValidUsername(txtUsername.Text))
+            // Validate username - must not be empty
+            if (string.IsNullOrWhiteSpace(txtUsername.Text))
             {
-                ShowError("Please enter a valid username (3-50 characters, letters, numbers, dots, underscores only).");
+                ShowError("Please enter your username.");
                 txtUsername.Focus();
                 return false;
             }
             
-            // Validate password
+            // Validate password - must not be empty
             if (string.IsNullOrWhiteSpace(txtPassword.Text))
             {
                 ShowError("Please enter your password.");
-                txtPassword.Focus();
-                return false;
-            }
-            
-            if (txtPassword.Text.Length < MIN_PASSWORD_LENGTH)
-            {
-                ShowError($"Password must be at least {MIN_PASSWORD_LENGTH} characters.");
                 txtPassword.Focus();
                 return false;
             }
@@ -125,6 +153,7 @@ namespace PhumlaniKamnandi.Presentation
 
         private void ShowError(string message)
         {
+            lblErrorMessage.ForeColor = Color.Red;
             lblErrorMessage.Text = message;
             lblErrorMessage.Visible = true;
         }
@@ -133,26 +162,32 @@ namespace PhumlaniKamnandi.Presentation
         {
             try
             {
-                if (employeeController == null)
-                {
-                    MessageBox.Show("System error. Please try again.", "Error", 
-                                  MessageBoxButtons.OK, MessageBoxIcon.Error);
-                    return false;
-                }
-                
-                string username = ValidationHelper.SanitizeInput(txtUsername.Text.Trim());
+                // Get credentials from input fields
+                string username = txtUsername.Text.Trim();
                 string password = txtPassword.Text; // Don't trim password - spaces may be intentional
                 
-                // Use controller for authentication
-                var employee = employeeController.AuthenticateUser(username, password);
-                
-                if (employee != null)
+                // Hardcoded authentication credentials
+                // Username: Clerk001 (case-insensitive)
+                // Password: PK007 (case-sensitive, exact match)
+                if (username.Equals("Clerk001", StringComparison.OrdinalIgnoreCase) && 
+                    password == "PK007")
                 {
-                    // Start session using SessionManager
+                    // Create employee object for the authenticated clerk
+                    var employee = new Employee
+                    {
+                        EmpID = 1,
+                        Name = "Clerk",
+                        Role = "Clerk",
+                        Username = "Clerk001",
+                        Password = "PK007"
+                    };
+                    
+                    // Start session to maintain login state across forms
                     SessionManager.StartSession(employee);
                     return true;
                 }
                 
+                // Authentication failed - invalid credentials
                 return false;
             }
             catch (Exception ex)

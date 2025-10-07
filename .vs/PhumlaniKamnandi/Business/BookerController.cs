@@ -1,4 +1,4 @@
-﻿// ========== Booker Controller ==========
+// ========== Booker Controller ==========
 using System;
 using PhumlaniKamnandi.Data;
 using System.Collections.Generic;

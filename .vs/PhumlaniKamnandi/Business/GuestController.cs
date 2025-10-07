@@ -1,4 +1,4 @@
-﻿// ========== Guest Controller ==========
+// ========== Guest Controller ==========
 using System;
 using PhumlaniKamnandi.Data;
 using System.Collections.Generic;

@@ -1,4 +1,4 @@
-﻿// ========== Room Controller ==========
+// ========== Room Controller ==========
 using System;
 using PhumlaniKamnandi.Data;
 using System.Collections.Generic;
