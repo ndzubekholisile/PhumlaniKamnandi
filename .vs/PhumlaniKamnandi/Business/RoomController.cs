@@ -4,9 +4,9 @@ using PhumlaniKamnandi.Data;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using PhumlaniKamnandi.Business;
+using System.Linq;
 
-
-namespace PhumlaKamnandi.Business
+namespace PhumlaniKamnandi.Business
 {
     public class RoomController
     {
@@ -98,6 +98,37 @@ namespace PhumlaKamnandi.Business
             {
                 return -1;
             }
+        }
+        #endregion
+
+        #region Availability Methods
+        public List<Room> GetAvailableRooms()
+        {
+            return rooms.Where(r => !r.IsOccupied).ToList();
+        }
+
+        public List<Room> GetOccupiedRooms()
+        {
+            return rooms.Where(r => r.IsOccupied).ToList();
+        }
+
+        public int GetAvailableRoomCount()
+        {
+            return rooms.Count(r => !r.IsOccupied);
+        }
+
+        public double GetOccupancyPercentage()
+        {
+            var totalRooms = rooms.Count;
+            if (totalRooms == 0) return 0;
+            
+            var occupiedRooms = rooms.Count(r => r.IsOccupied);
+            return (occupiedRooms * 100.0) / totalRooms;
+        }
+
+        public List<Room> GetRoomsBySuiteType(string suiteType)
+        {
+            return rooms.Where(r => r.SuiteType.Equals(suiteType, StringComparison.OrdinalIgnoreCase)).ToList();
         }
         #endregion
     }

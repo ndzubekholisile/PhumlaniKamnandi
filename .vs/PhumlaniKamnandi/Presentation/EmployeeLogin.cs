@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data;
@@ -10,12 +10,13 @@ using System.Threading.Tasks;
 using System.Windows.Forms;
 using PhumlaniKamnandi.Data;
 using PhumlaniKamnandi.Business;
+using PhumlaniKamnandi.Presentation.Infrastructure;
 
 namespace PhumlaniKamnandi.Presentation
 {
     public partial class EmployeeLogin : Form
     {
-        private HotelDB hotelDB;
+        private EmployeeController employeeController;
         private int loginAttempts = 0;
         private const int MAX_LOGIN_ATTEMPTS = 3;
         private const int MIN_USERNAME_LENGTH = 3;
@@ -32,7 +33,7 @@ namespace PhumlaniKamnandi.Presentation
         {
             try
             {
-                hotelDB = new HotelDB();
+                employeeController = new EmployeeController();
                 
                 // Set focus to username field
                 txtUsername.Focus();
@@ -96,28 +97,10 @@ namespace PhumlaniKamnandi.Presentation
         {
             lblErrorMessage.Visible = false;
             
-            // Validate username
-            if (string.IsNullOrWhiteSpace(txtUsername.Text))
+            // Validate username using ValidationHelper
+            if (!ValidationHelper.IsValidUsername(txtUsername.Text))
             {
-                ShowError("Please enter your username.");
-                txtUsername.Focus();
-                return false;
-            }
-            
-            string username = txtUsername.Text.Trim();
-            
-            // Check username length
-            if (username.Length < MIN_USERNAME_LENGTH)
-            {
-                ShowError($"Username must be at least {MIN_USERNAME_LENGTH} characters.");
-                txtUsername.Focus();
-                return false;
-            }
-            
-            // Validate username format (alphanumeric, dots, underscores only)
-            if (!Regex.IsMatch(username, @"^[a-zA-Z0-9._]+$"))
-            {
-                ShowError("Username can only contain letters, numbers, dots, and underscores.");
+                ShowError("Please enter a valid username (3-50 characters, letters, numbers, dots, underscores only).");
                 txtUsername.Focus();
                 return false;
             }
@@ -150,25 +133,27 @@ namespace PhumlaniKamnandi.Presentation
         {
             try
             {
-                if (hotelDB == null || hotelDB.AllEmployees == null)
+                if (employeeController == null)
                 {
-                    MessageBox.Show("Database connection error. Please try again.", "Error", 
+                    MessageBox.Show("System error. Please try again.", "Error", 
                                   MessageBoxButtons.OK, MessageBoxIcon.Error);
                     return false;
                 }
                 
-                string username = SanitizeInput(txtUsername.Text.Trim());
+                string username = ValidationHelper.SanitizeInput(txtUsername.Text.Trim());
                 string password = txtPassword.Text; // Don't trim password - spaces may be intentional
                 
-                // Check against database with case-insensitive username comparison
-                var employee = hotelDB.AllEmployees.FirstOrDefault(e => 
-                    e != null &&
-                    !string.IsNullOrEmpty(e.Username) &&
-                    e.Username.Trim().Equals(username, StringComparison.OrdinalIgnoreCase) && 
-                    !string.IsNullOrEmpty(e.Password) &&
-                    e.Password == password);
+                // Use controller for authentication
+                var employee = employeeController.AuthenticateUser(username, password);
                 
-                return employee != null;
+                if (employee != null)
+                {
+                    // Start session using SessionManager
+                    SessionManager.StartSession(employee);
+                    return true;
+                }
+                
+                return false;
             }
             catch (Exception ex)
             {
@@ -178,14 +163,7 @@ namespace PhumlaniKamnandi.Presentation
             }
         }
         
-        private string SanitizeInput(string input)
-        {
-            if (string.IsNullOrEmpty(input))
-                return string.Empty;
-                
-            // Remove any potentially dangerous characters
-            return Regex.Replace(input, @"[^\w\s._-]", "");
-        }
+
 
         private void btnCancel_Click(object sender, EventArgs e)
         {

@@ -4,8 +4,9 @@ using PhumlaniKamnandi.Data;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using PhumlaniKamnandi.Business;
+using System.Linq;
 
-namespace PhumlaKamnandi.Business
+namespace PhumlaniKamnandi.Business
 {
     public class EmployeeController
     {
@@ -97,6 +98,32 @@ namespace PhumlaKamnandi.Business
             {
                 return -1;
             }
+        }
+        #endregion
+
+        #region Authentication Methods
+        public Employee AuthenticateUser(string username, string password)
+        {
+            if (string.IsNullOrWhiteSpace(username) || string.IsNullOrWhiteSpace(password))
+                return null;
+
+            return employees.FirstOrDefault(e => 
+                e != null &&
+                !string.IsNullOrEmpty(e.Username) &&
+                e.Username.Trim().Equals(username.Trim(), StringComparison.OrdinalIgnoreCase) && 
+                !string.IsNullOrEmpty(e.Password) &&
+                e.Password == password);
+        }
+
+        public Employee FindByUsername(string username)
+        {
+            if (string.IsNullOrWhiteSpace(username))
+                return null;
+
+            return employees.FirstOrDefault(e => 
+                e != null &&
+                !string.IsNullOrEmpty(e.Username) &&
+                e.Username.Trim().Equals(username.Trim(), StringComparison.OrdinalIgnoreCase));
         }
         #endregion
     }

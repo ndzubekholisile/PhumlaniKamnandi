@@ -4,9 +4,9 @@ using PhumlaniKamnandi.Data;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using PhumlaniKamnandi.Business;
+using System.Linq;
 
-
-namespace PhumlaKamnandi.Business
+namespace PhumlaniKamnandi.Business
 {
     public class RoomAccountController
     {

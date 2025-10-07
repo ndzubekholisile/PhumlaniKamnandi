@@ -4,9 +4,9 @@ using PhumlaniKamnandi.Data;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using PhumlaniKamnandi.Business;
+using System.Linq;
 
-
-namespace PhumlaKamnandi.Business
+namespace PhumlaniKamnandi.Business
 {
     public class ReservationController
     {
@@ -97,6 +97,50 @@ namespace PhumlaKamnandi.Business
             {
                 return -1;
             }
+        }
+        #endregion
+
+        #region Business Logic Methods
+        public List<Reservation> GetActiveReservations()
+        {
+            return reservations.Where(r => r.Status == "confirmed" || r.Status == "checked_in").ToList();
+        }
+
+        public List<Reservation> GetReservationsByDateRange(DateTime startDate, DateTime endDate)
+        {
+            return reservations.Where(r => 
+                r.CheckInDate <= endDate && r.CheckOutDate >= startDate &&
+                (r.Status == "confirmed" || r.Status == "checked_in"))
+                .ToList();
+        }
+
+        public List<Reservation> GetReservationsByBookingIds(List<int> bookingIds)
+        {
+            return reservations.Where(r => bookingIds.Contains(r.BookingID)).ToList();
+        }
+
+        public List<Reservation> SearchReservations(string guestName = null, string bookingId = null)
+        {
+            var query = reservations.AsEnumerable();
+
+            if (!string.IsNullOrWhiteSpace(bookingId))
+            {
+                query = query.Where(r => r.BookingID.ToString().Contains(bookingId));
+            }
+
+            return query.ToList();
+        }
+
+        public decimal CalculateReservationCost(Reservation reservation, decimal nightlyRate = 150.00m)
+        {
+            var nights = (reservation.CheckOutDate - reservation.CheckInDate).Days;
+            return nights * nightlyRate;
+        }
+
+        public decimal CalculateDeposit(Reservation reservation, decimal depositPercentage = 0.20m)
+        {
+            var totalCost = CalculateReservationCost(reservation);
+            return totalCost * depositPercentage;
         }
         #endregion
     }

@@ -4,9 +4,9 @@ using PhumlaniKamnandi.Data;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using PhumlaniKamnandi.Business;
+using System.Linq;
 
-
-namespace PhumlaKamnandi.Business
+namespace PhumlaniKamnandi.Business
 {
     public class GuestController
     {
@@ -99,6 +99,31 @@ namespace PhumlaKamnandi.Business
             {
                 return -1;
             }
+        }
+        #endregion
+
+        #region Search Methods
+        public List<Guest> SearchGuests(string searchTerm)
+        {
+            if (string.IsNullOrWhiteSpace(searchTerm))
+                return guests.ToList();
+
+            searchTerm = searchTerm.ToLower().Trim();
+            return guests.Where(g => 
+                g.Name.ToLower().Contains(searchTerm) ||
+                g.Telephone.Contains(searchTerm) ||
+                g.AddressLine1.ToLower().Contains(searchTerm))
+                .ToList();
+        }
+
+        public Guest FindByGuestId(int guestId)
+        {
+            return guests.FirstOrDefault(g => g.GuestID == guestId);
+        }
+
+        public List<Guest> GetGuestsByBookingIds(List<int> bookingIds)
+        {
+            return guests.Where(g => bookingIds.Contains(g.BookingID)).ToList();
         }
         #endregion
     }
