@@ -5,8 +5,8 @@ CREATE TABLE [dbo].RoomAccount (
     status VARCHAR(20) NOT NULL CHECK (status IN ('settled','outstanding'))
 );
 
--- Table: Rooms
-CREATE TABLE [dbo].Rooms (
+-- Table: Room
+CREATE TABLE [dbo].Room (
     roomID INT PRIMARY KEY IDENTITY(1,1),
     accountID INT,
     isOccupied BIT DEFAULT 0,
