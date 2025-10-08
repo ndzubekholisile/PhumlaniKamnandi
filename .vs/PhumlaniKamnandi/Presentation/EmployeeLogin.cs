@@ -18,11 +18,27 @@ namespace PhumlaniKamnandi.Presentation
     {
         private int loginAttempts = 0;
         private const int MAX_LOGIN_ATTEMPTS = 3;
+        private EmployeeController employeeController;
 
         public EmployeeLogin()
         {
             InitializeComponent();
+            InitializeControllers();
             InitializeForm();
+        }
+
+        private void InitializeControllers()
+        {
+            try
+            {
+                employeeController = new EmployeeController();
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Error initializing login system: {ex.Message}\n\nPlease check database connection.", 
+                              "Initialization Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                Application.Exit();
+            }
         }
         private void InitializeForm()
         {
@@ -162,28 +178,25 @@ namespace PhumlaniKamnandi.Presentation
         {
             try
             {
+                // Validate controller is initialized
+                if (employeeController == null)
+                {
+                    MessageBox.Show("Authentication system not initialized. Please restart the application.", 
+                                  "System Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    return false;
+                }
+
                 // Get credentials from input fields
                 string username = txtUsername.Text.Trim();
                 string password = txtPassword.Text; // Don't trim password - spaces may be intentional
                 
-                // Hardcoded authentication credentials
-                // Username: Clerk001 (case-insensitive)
-                // Password: PK007 (case-sensitive, exact match)
-                if (username.Equals("Clerk001", StringComparison.OrdinalIgnoreCase) && 
-                    password == "PK007")
+                // Authenticate using EmployeeController
+                var authenticatedEmployee = employeeController.AuthenticateUser(username, password);
+                
+                if (authenticatedEmployee != null)
                 {
-                    // Create employee object for the authenticated clerk
-                    var employee = new Employee
-                    {
-                        EmpID = 1,
-                        Name = "Clerk",
-                        Role = "Clerk",
-                        Username = "Clerk001",
-                        Password = "PK007"
-                    };
-                    
-                    // Start session to maintain login state across forms
-                    SessionManager.StartSession(employee);
+                    // Authentication successful - start session
+                    SessionManager.StartSession(authenticatedEmployee);
                     return true;
                 }
                 
@@ -192,8 +205,8 @@ namespace PhumlaniKamnandi.Presentation
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"Authentication error: {ex.Message}", "Error", 
-                              MessageBoxButtons.OK, MessageBoxIcon.Error);
+                MessageBox.Show($"Authentication error: {ex.Message}\n\nPlease try again or contact support.", 
+                              "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
                 return false;
             }
         }

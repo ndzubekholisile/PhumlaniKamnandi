@@ -14,7 +14,7 @@ namespace PhumlaniKamnandi.Business
         public ReservationController()
         {
             hotelDB = new HotelDB();
-            reservations = hotelDB.AllReservations;
+            reservations = hotelDB.AllReservations ?? new Collection<Reservation>();
         }
         #endregion
 
@@ -65,29 +65,34 @@ namespace PhumlaniKamnandi.Business
         #region Find Methods
         public Reservation Find(int ID)
         {
+            if (reservations == null || reservations.Count == 0)
+                return null;
+
             int index = 0;
-            bool found = (reservations[index].ReservationID == ID);
+            bool found = (reservations[index] != null && reservations[index].ReservationID == ID);
             int count = AllReservations.Count;
 
             while (!(found) && (index < reservations.Count - 1))
             {
                 index++;
-                found = (reservations[index].ReservationID == ID);
+                found = (reservations[index] != null && reservations[index].ReservationID == ID);
             }
 
-
-            return AllReservations[index];
+            return found ? AllReservations[index] : null;
         }
 
         private int FindIndex(Reservation aReservation)
         {
+            if (reservations == null || reservations.Count == 0 || aReservation == null)
+                return -1;
+
             int counter = 0;
             bool found = false;
-            found = (aReservation.ReservationID == reservations[counter].ReservationID);
-            while (!found && counter <= reservations.Count)
+            found = (reservations[counter] != null && aReservation.ReservationID == reservations[counter].ReservationID);
+            while (!found && counter < reservations.Count - 1)
             {
                 counter++;
-                found = (aReservation.ReservationID == reservations[counter].ReservationID);
+                found = (reservations[counter] != null && aReservation.ReservationID == reservations[counter].ReservationID);
             }
             if (found)
             {
@@ -103,12 +108,15 @@ namespace PhumlaniKamnandi.Business
         #region Business Logic Methods
         public List<Reservation> GetActiveReservations()
         {
-            return reservations.Where(r => r.Status == "confirmed" || r.Status == "checked_in").ToList();
+            if (reservations == null) return new List<Reservation>();
+            return reservations.Where(r => r != null && r.Status != null && 
+                                     (r.Status == "confirmed" || r.Status == "checked_in")).ToList();
         }
 
         public List<Reservation> GetReservationsByDateRange(DateTime startDate, DateTime endDate)
         {
-            return reservations.Where(r => 
+            if (reservations == null) return new List<Reservation>();
+            return reservations.Where(r => r != null && r.Status != null &&
                 r.CheckInDate <= endDate && r.CheckOutDate >= startDate &&
                 (r.Status == "confirmed" || r.Status == "checked_in"))
                 .ToList();
@@ -116,12 +124,14 @@ namespace PhumlaniKamnandi.Business
 
         public List<Reservation> GetReservationsByBookingIds(List<int> bookingIds)
         {
-            return reservations.Where(r => bookingIds.Contains(r.BookingID)).ToList();
+            if (reservations == null || bookingIds == null) return new List<Reservation>();
+            return reservations.Where(r => r != null && bookingIds.Contains(r.BookingID)).ToList();
         }
 
         public List<Reservation> SearchReservations(string guestName = null, string bookingId = null)
         {
-            var query = reservations.AsEnumerable();
+            if (reservations == null) return new List<Reservation>();
+            var query = reservations.Where(r => r != null).AsEnumerable();
 
             if (!string.IsNullOrWhiteSpace(bookingId))
             {
@@ -133,12 +143,14 @@ namespace PhumlaniKamnandi.Business
 
         public decimal CalculateReservationCost(Reservation reservation, decimal nightlyRate = 150.00m)
         {
+            if (reservation == null) return 0;
             var nights = (reservation.CheckOutDate - reservation.CheckInDate).Days;
             return nights * nightlyRate;
         }
 
         public decimal CalculateDeposit(Reservation reservation, decimal depositPercentage = 0.20m)
         {
+            if (reservation == null) return 0;
             var totalCost = CalculateReservationCost(reservation);
             return totalCost * depositPercentage;
         }

@@ -14,7 +14,7 @@ namespace PhumlaniKamnandi.Business
         public GuestController()
         {
             hotelDB = new HotelDB();
-            guests = hotelDB.AllGuests;
+            guests = hotelDB.AllGuests ?? new Collection<Guest>();
         }
         #endregion
 
@@ -66,30 +66,35 @@ namespace PhumlaniKamnandi.Business
 
         public Guest Find(int ID)
         {
+            if (guests == null || guests.Count == 0)
+                return null;
+
             int index = 0;
-            bool found = (guests[index].BookingID == ID);
+            bool found = (guests[index] != null && guests[index].BookingID == ID);
             int count = AllGuests.Count;
 
             while (!(found) && (index < guests.Count - 1))
             {
                 index++;
-                found = (guests[index].BookingID == ID);
+                found = (guests[index] != null && guests[index].BookingID == ID);
             }
 
-
-            return AllGuests[index];
+            return found ? AllGuests[index] : null;
         }
 
         private int FindIndex(Guest aGst)
         {
+            if (guests == null || guests.Count == 0 || aGst == null)
+                return -1;
+
             HotelDB.HotelObject aGuest = new HotelDB.HotelObject(aGst);
             int counter = 0;
             bool found = false;
-            found = (aGuest.AsGuest.BookingID == guests[counter].BookingID);
-            while (!found && counter <= guests.Count)
+            found = (guests[counter] != null && aGuest.AsGuest.BookingID == guests[counter].BookingID);
+            while (!found && counter < guests.Count - 1)
             {
                 counter++;
-                found = (aGuest.AsGuest.BookingID == guests[counter].BookingID);
+                found = (guests[counter] != null && aGuest.AsGuest.BookingID == guests[counter].BookingID);
             }
             if (found)
             {
@@ -105,25 +110,29 @@ namespace PhumlaniKamnandi.Business
         #region Search Methods
         public List<Guest> SearchGuests(string searchTerm)
         {
+            if (guests == null) return new List<Guest>();
+            
             if (string.IsNullOrWhiteSpace(searchTerm))
-                return guests.ToList();
+                return guests.Where(g => g != null).ToList();
 
             searchTerm = searchTerm.ToLower().Trim();
-            return guests.Where(g => 
-                g.Name.ToLower().Contains(searchTerm) ||
-                g.Telephone.Contains(searchTerm) ||
-                g.AddressLine1.ToLower().Contains(searchTerm))
+            return guests.Where(g => g != null &&
+                (g.Name != null && g.Name.ToLower().Contains(searchTerm)) ||
+                (g.Telephone != null && g.Telephone.Contains(searchTerm)) ||
+                (g.AddressLine1 != null && g.AddressLine1.ToLower().Contains(searchTerm)))
                 .ToList();
         }
 
         public Guest FindByGuestId(int guestId)
         {
-            return guests.FirstOrDefault(g => g.GuestID == guestId);
+            if (guests == null) return null;
+            return guests.FirstOrDefault(g => g != null && g.GuestID == guestId);
         }
 
         public List<Guest> GetGuestsByBookingIds(List<int> bookingIds)
         {
-            return guests.Where(g => bookingIds.Contains(g.BookingID)).ToList();
+            if (guests == null || bookingIds == null) return new List<Guest>();
+            return guests.Where(g => g != null && bookingIds.Contains(g.BookingID)).ToList();
         }
         #endregion
     }

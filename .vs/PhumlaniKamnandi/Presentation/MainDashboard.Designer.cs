@@ -91,6 +91,7 @@ namespace PhumlaniKamnandi.Presentation
             this.btnMakeNewBooking.TabIndex = 3;
             this.btnMakeNewBooking.Text = "Make New Booking";
             this.btnMakeNewBooking.UseVisualStyleBackColor = false;
+            this.btnMakeNewBooking.Click += new System.EventHandler(this.btnMakeNewBooking_Click);
             // 
             // btnManageBookings
             // 
@@ -105,6 +106,7 @@ namespace PhumlaniKamnandi.Presentation
             this.btnManageBookings.TabIndex = 4;
             this.btnManageBookings.Text = "Manage Existing Bookings";
             this.btnManageBookings.UseVisualStyleBackColor = false;
+            this.btnManageBookings.Click += new System.EventHandler(this.btnManageBookings_Click);
             // 
             // btnViewReports
             // 
@@ -119,6 +121,7 @@ namespace PhumlaniKamnandi.Presentation
             this.btnViewReports.TabIndex = 5;
             this.btnViewReports.Text = "View Reports";
             this.btnViewReports.UseVisualStyleBackColor = false;
+            this.btnViewReports.Click += new System.EventHandler(this.btnViewReports_Click);
             // 
             // pnlOccupancy
             // 
@@ -144,6 +147,7 @@ namespace PhumlaniKamnandi.Presentation
             // 
             this.timerDateTime.Enabled = true;
             this.timerDateTime.Interval = 1000;
+            this.timerDateTime.Tick += new System.EventHandler(this.timerDateTime_Tick);
             // 
             // pnlMain
             // 

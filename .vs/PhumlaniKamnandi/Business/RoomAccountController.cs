@@ -14,7 +14,7 @@ namespace PhumlaniKamnandi.Business
         public RoomAccountController()
         {
             hotelDB = new HotelDB();
-            roomaccounts = hotelDB.AllRoomAccounts;
+            roomaccounts = hotelDB.AllRoomAccounts ?? new Collection<RoomAccount>();
         }
         #endregion
 
@@ -65,29 +65,34 @@ namespace PhumlaniKamnandi.Business
         #region Find Methods
         public RoomAccount Find(int ID)
         {
+            if (roomaccounts == null || roomaccounts.Count == 0)
+                return null;
+
             int index = 0;
-            bool found = (roomaccounts[index].AccountID == ID);
+            bool found = (roomaccounts[index] != null && roomaccounts[index].AccountID == ID);
             int count = AllRoomAccounts.Count;
 
             while (!(found) && (index < roomaccounts.Count - 1))
             {
                 index++;
-                found = (roomaccounts[index].AccountID == ID);
+                found = (roomaccounts[index] != null && roomaccounts[index].AccountID == ID);
             }
 
-
-            return AllRoomAccounts[index];
+            return found ? AllRoomAccounts[index] : null;
         }
 
         private int FindIndex(RoomAccount aRoomAccount)
         {
+            if (roomaccounts == null || roomaccounts.Count == 0 || aRoomAccount == null)
+                return -1;
+
             int counter = 0;
             bool found = false;
-            found = (aRoomAccount.AccountID == roomaccounts[counter].AccountID);
-            while (!found && counter <= roomaccounts.Count)
+            found = (roomaccounts[counter] != null && aRoomAccount.AccountID == roomaccounts[counter].AccountID);
+            while (!found && counter < roomaccounts.Count - 1)
             {
                 counter++;
-                found = (aRoomAccount.AccountID == roomaccounts[counter].AccountID);
+                found = (roomaccounts[counter] != null && aRoomAccount.AccountID == roomaccounts[counter].AccountID);
             }
             if (found)
             {

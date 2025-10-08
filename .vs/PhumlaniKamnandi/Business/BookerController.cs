@@ -14,7 +14,7 @@ namespace PhumlaniKamnandi.Business
         public BookerController()
         {
             hotelDB = new HotelDB();
-            bookers = hotelDB.AllBookers;
+            bookers = hotelDB.AllBookers ?? new Collection<Booker>();
         }
         #endregion
 
@@ -65,29 +65,34 @@ namespace PhumlaniKamnandi.Business
         #region Find Methods
         public Booker Find(int ID)
         {
+            if (bookers == null || bookers.Count == 0)
+                return null;
+
             int index = 0;
-            bool found = (bookers[index].BookingID == ID);
+            bool found = (bookers[index] != null && bookers[index].BookingID == ID);
             int count = AllBookers.Count;
 
             while (!(found) && (index < bookers.Count - 1))
             {
                 index++;
-                found = (bookers[index].BookingID == ID);
+                found = (bookers[index] != null && bookers[index].BookingID == ID);
             }
 
-
-            return AllBookers[index];
+            return found ? AllBookers[index] : null;
         }
 
         private int FindIndex(Booker aBooker)
         {
+            if (bookers == null || bookers.Count == 0 || aBooker == null)
+                return -1;
+
             int counter = 0;
             bool found = false;
-            found = (aBooker.BookingID == bookers[counter].BookingID);
-            while (!found && counter <= bookers.Count)
+            found = (bookers[counter] != null && aBooker.BookingID == bookers[counter].BookingID);
+            while (!found && counter < bookers.Count - 1)
             {
                 counter++;
-                found = (aBooker.BookingID == bookers[counter].BookingID);
+                found = (bookers[counter] != null && aBooker.BookingID == bookers[counter].BookingID);
             }
             if (found)
             {
@@ -100,7 +105,7 @@ namespace PhumlaniKamnandi.Business
         }
         #endregion
 
-        #region Enhanced Booking Operations
+        #region Booking Operations
         private GuestController guestController;
         private ReservationController reservationController;
 
@@ -132,8 +137,11 @@ namespace PhumlaniKamnandi.Business
             var reservations = reservationController.AllReservations;
             var guests = guestController.AllGuests;
 
-            return reservations.Join(
-                guests,
+            if (reservations == null || guests == null)
+                return new List<BookingViewModel>();
+
+            return reservations.Where(r => r != null).Join(
+                guests.Where(g => g != null),
                 r => r.BookingID,
                 g => g.BookingID,
                 (r, g) => new BookingViewModel
@@ -237,13 +245,17 @@ namespace PhumlaniKamnandi.Business
             dt.Columns.Add("Total Rooms", typeof(int));
             dt.Columns.Add("Occupancy %", typeof(string));
 
-            var totalRooms = roomController.AllRooms.Count;
+            var totalRooms = roomController.AllRooms != null ? roomController.AllRooms.Count : 0;
             var allReservations = reservationController.AllReservations;
+
+            if (allReservations == null)
+                return dt;
 
             for (var date = startDate; date <= endDate; date = date.AddDays(1))
             {
                 var occupiedRooms = allReservations
-                    .Count(r => r.CheckInDate <= date && r.CheckOutDate > date &&
+                    .Count(r => r != null && r.Status != null &&
+                               r.CheckInDate <= date && r.CheckOutDate > date &&
                                (r.Status == "confirmed" || r.Status == "checked_in"));
 
                 var occupancyPercent = totalRooms > 0 ? (occupiedRooms * 100.0) / totalRooms : 0;
@@ -272,6 +284,9 @@ namespace PhumlaniKamnandi.Business
             var endOfMonth = startOfMonth.AddMonths(1).AddDays(-1);
             var allReservations = reservationController.AllReservations;
 
+            if (allReservations == null)
+                return dt;
+
             for (int week = 1; week <= 5; week++)
             {
                 var weekStart = startOfMonth.AddDays((week - 1) * 7);
@@ -280,7 +295,8 @@ namespace PhumlaniKamnandi.Business
                 if (weekEnd > endOfMonth) weekEnd = endOfMonth;
 
                 var weekBookings = allReservations
-                    .Where(r => r.DateBooked >= weekStart && r.DateBooked <= weekEnd &&
+                    .Where(r => r != null && r.Status != null &&
+                               r.DateBooked >= weekStart && r.DateBooked <= weekEnd &&
                                r.Status != "cancelled")
                     .ToList();
 

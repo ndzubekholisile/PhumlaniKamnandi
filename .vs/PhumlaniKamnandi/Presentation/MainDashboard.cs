@@ -50,17 +50,32 @@ namespace PhumlaniKamnandi.Presentation
                 // Update UI with current user info if available
                 if (SessionManager.IsLoggedIn)
                 {
-                    this.Text = $"Hotel Management System - Welcome {SessionManager.CurrentUser.Name}";
+                    string displayName = SessionManager.GetCurrentUserDisplayName();
+                    this.Text = $"Hotel Management System - Welcome {displayName}";
+                    
+                    // Update welcome label if it exists
+                    if (lblWelcome != null)
+                    {
+                        lblWelcome.Text = $"Welcome to the Hotel Management Dashboard, {displayName}";
+                    }
                 }
             }
-            catch (UnauthorizedAccessException)
+            catch (UnauthorizedAccessException ex)
             {
+                MessageBox.Show(ex.Message, "Session Expired", 
+                              MessageBoxButtons.OK, MessageBoxIcon.Warning);
                 this.Hide();
                 var loginForm = new EmployeeLogin();
                 loginForm.ShowDialog();
                 if (!SessionManager.IsLoggedIn)
                 {
                     Application.Exit();
+                }
+                else
+                {
+                    // Refresh dashboard after re-login
+                    ValidateSession();
+                    LoadDashboardData();
                 }
                 this.Show();
             }
@@ -70,10 +85,26 @@ namespace PhumlaniKamnandi.Presentation
         {
             try
             {
+                // Validate controllers are initialized
+                if (roomController == null || reservationController == null)
+                {
+                    MessageBox.Show("Dashboard controllers are not initialized.", "Error", 
+                                  MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    return;
+                }
+
+                // Validate room data is available
+                if (roomController.AllRooms == null)
+                {
+                    lblOccupancy.Text = "Room data unavailable";
+                    pnlOccupancy.BackColor = Color.LightGray;
+                    return;
+                }
+
                 // Use room controller for occupancy data
+                var totalRooms = roomController.AllRooms.Count;
                 var occupancyPercentage = roomController.GetOccupancyPercentage();
                 var availableRooms = roomController.GetAvailableRoomCount();
-                var totalRooms = roomController.AllRooms.Count;
 
                 lblOccupancy.Text = $"Today's Occupancy: {occupancyPercentage:F1}% ({totalRooms - availableRooms}/{totalRooms} rooms)";
 
@@ -85,19 +116,23 @@ namespace PhumlaniKamnandi.Presentation
                 else
                     pnlOccupancy.BackColor = Color.FromArgb(192, 255, 192); // Light green
 
-                // Load additional dashboard metrics
-                var activeReservations = reservationController.GetActiveReservations().Count;
-                var todayCheckIns = reservationController.AllReservations
-                    .Count(r => r.CheckInDate.Date == DateTime.Today && r.Status == "confirmed");
-                var todayCheckOuts = reservationController.AllReservations
-                    .Count(r => r.CheckOutDate.Date == DateTime.Today && r.Status == "confirmed");
+                // Load additional dashboard metrics if reservation data is available
+                if (reservationController.AllReservations != null)
+                {
+                    var activeReservations = reservationController.GetActiveReservations().Count;
+                    var todayCheckIns = reservationController.AllReservations
+                        .Count(r => r.CheckInDate.Date == DateTime.Today && r.Status == "confirmed");
+                    var todayCheckOuts = reservationController.AllReservations
+                        .Count(r => r.CheckOutDate.Date == DateTime.Today && r.Status == "confirmed");
 
-                // Update additional labels if they exist
-                UpdateDashboardMetrics(activeReservations, todayCheckIns, todayCheckOuts);
+                    // Update additional labels if they exist
+                    UpdateDashboardMetrics(activeReservations, todayCheckIns, todayCheckOuts);
+                }
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"Error loading dashboard data: {ex.Message}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                MessageBox.Show($"Error loading dashboard data: {ex.Message}\n\nStack Trace: {ex.StackTrace}", 
+                              "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
 
