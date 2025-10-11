@@ -1,7 +1,7 @@
-﻿using PhumlaniKamnandi.Business;
+using PhumlaniKamnandi.Business;
 using PhumlaniKamnandi.Data;
+using PhumlaniKamnandi.Presentation.Infrastructure;
 using System;
-using static PhumlaniKamnandi.Data.DB;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data;
@@ -15,15 +15,43 @@ namespace PhumlaniKamnandi.Presentation
 {
     public partial class NewBooking : Form
     {
-        private HotelDB hotelDB;
+        private GuestController guestController;
+        private ReservationController reservationController;
+        private RoomController roomController;
+        private BookerController bookerController;
         private Guest selectedGuest;
         private bool isAvailabilityChecked = false;
-
-        public NewBooking()
+        
+        //Season variable
+        private enum Season
+        {
+            Low = 0,
+            Mid = 1,
+            High = 2
+        }
+        private Season season;
+        public NewBooking(HotelDB hDB)
         {
             InitializeComponent();
-            hotelDB = new HotelDB();
+            InitializeControllers(hDB);
             InitializeForm();
+        }
+
+        private void InitializeControllers(HotelDB hDB)
+        {
+            try
+            {
+                guestController = new GuestController(hDB);
+                reservationController = new ReservationController(hDB);
+                roomController = new RoomController(hDB);
+                bookerController = new BookerController(hDB );
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Error initializing booking form: {ex.Message}", "Error", 
+                              MessageBoxButtons.OK, MessageBoxIcon.Error);
+                this.Close();
+            }
         }
 
         private void InitializeForm()
@@ -42,17 +70,53 @@ namespace PhumlaniKamnandi.Presentation
             UpdateTotalCost();
         }
 
+        //Method to calculate Price
+        private decimal CalculatePrice()
+        {
+            decimal price = 0;
+            // Switch statement to update price
+            switch (season)
+            {
+                case Season.Low:
+                    price = 550;
+                    break;
+                case Season.Mid:
+                    price = 750;
+                    break;
+                case Season.High:
+                    price = 995;
+                    break;
+            }
+            return price;
+        }
+        private void UpdateSeason(DateTime dt)
+        {
+            if (dtpCheckIn.Value >= new DateTime(2025, 12, 1) && dtpCheckIn.Value <= new DateTime(2025, 12, 7))
+            {
+                season = Season.Low;
+            }
+            else if(dtpCheckIn.Value >= new DateTime(2025, 12, 8) && dtpCheckIn.Value <= new DateTime(2025, 12, 15))
+            {
+                season = Season.Mid;
+            }
+            else if (dtpCheckIn.Value >= new DateTime(2025, 12, 16) && dtpCheckIn.Value <= new DateTime(2025, 12, 31))
+            {
+                season = Season.Low;
+            }
+        }
+            
         private void UpdateTotalCost()
         {
             if (isAvailabilityChecked)
             {
-                var nights = (dtpCheckOut.Value - dtpCheckIn.Value).Days;
-                var totalCost = nights * 150.00m; // Assuming $150 per night
-                var deposit = totalCost * 0.20m; // The 20% deposit
+                UpdateSeason(dtpCheckIn.Value);
+                int nights = (dtpCheckOut.Value - dtpCheckIn.Value).Days;
+                decimal totalCost = nights * CalculatePrice(); // Assuming $150 per night
+                decimal deposit = totalCost * 0.10m; // The 10% deposit
 
                 lblTotalNights.Text = $"Total Nights: {nights}";
-                lblTotalCost.Text = $"Total Cost: ${totalCost:F2}";
-                lblDepositRequired.Text = $"Deposit Required: ${deposit:F2}";
+                lblTotalCost.Text = $"Total Cost: R{totalCost:F2}";
+                lblDepositRequired.Text = $"Deposit Required: R{deposit:F2}";
             }
         }
 
@@ -82,7 +146,7 @@ namespace PhumlaniKamnandi.Presentation
 
         private void btnFindGuest_Click(object sender, EventArgs e)
         {
-            var guestSearchForm = new GuestSearch();
+            var guestSearchForm = new GuestSearch(guestController);
             if (guestSearchForm.ShowDialog() == DialogResult.OK)
             {
                 selectedGuest = guestSearchForm.SelectedGuest;
@@ -96,27 +160,39 @@ namespace PhumlaniKamnandi.Presentation
 
         private void btnCheckAvailability_Click(object sender, EventArgs e)
         {
-            if (dtpCheckIn.Value >= dtpCheckOut.Value)
+            // Validate date range using ValidationHelper
+            if (!ValidationHelper.IsValidDateRange(dtpCheckIn.Value, dtpCheckOut.Value))
             {
-                MessageBox.Show("Check-out date must be after check-in date.", "Invalid Dates", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                MessageBox.Show("Please select valid dates. Check-in must be today or later, and check-out must be after check-in.", 
+                              "Invalid Dates", MessageBoxButtons.OK, MessageBoxIcon.Warning);
                 return;
             }
 
-            // This will check the availability logic
-            var availableRooms = hotelDB.AllRooms.Count(r => !r.IsOccupied);
+            try
+            {
+                // Use room controller for availability check
+                var availableRooms = roomController.GetAvailableRoomCount();
 
-            if (availableRooms > 0)
-            {
-                MessageBox.Show($"Rooms are available! {availableRooms} rooms currently free.", "Availability Check", MessageBoxButtons.OK, MessageBoxIcon.Information);
-                isAvailabilityChecked = true;
-                pnlConfirmation.Visible = true;
-                UpdateTotalCost();
+                if (availableRooms > 0)
+                {
+                    MessageBox.Show($"Rooms are available! {availableRooms} rooms currently free.", 
+                                  "Availability Check", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                    isAvailabilityChecked = true;
+                    pnlConfirmation.Visible = true;
+                    UpdateTotalCost();
+                }
+                else
+                {
+                    MessageBox.Show("No rooms available for the selected dates.", 
+                                  "No Availability", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                    isAvailabilityChecked = false;
+                    pnlConfirmation.Visible = false;
+                }
             }
-            else
+            catch (Exception ex)
             {
-                MessageBox.Show("No rooms available for the selected dates.", "No Availability", MessageBoxButtons.OK, MessageBoxIcon.Warning);
-                isAvailabilityChecked = false;
-                pnlConfirmation.Visible = false;
+                MessageBox.Show($"Error checking availability: {ex.Message}", "Error", 
+                              MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
 
             CheckBookingReadiness();
@@ -124,225 +200,124 @@ namespace PhumlaniKamnandi.Presentation
 
         private void CheckBookingReadiness()
         {
-            bool isGuestSelected = (rbExistingGuest.Checked && selectedGuest != null) ||
-                                  (rbNewGuest.Checked && !string.IsNullOrWhiteSpace(txtGuestName.Text) &&
-                                   !string.IsNullOrWhiteSpace(txtTelephone.Text));
+            bool isGuestSelected = false;
+
+            if (rbExistingGuest.Checked)
+            {
+                isGuestSelected = selectedGuest != null;
+            }
+            else if (rbNewGuest.Checked)
+            {
+                // Use ValidationHelper for proper validation
+                isGuestSelected = ValidationHelper.IsValidName(txtGuestName.Text) &&
+                                ValidationHelper.IsValidPhoneNumber(txtTelephone.Text);
+            }
 
             btnConfirmBooking.Enabled = isAvailabilityChecked && isGuestSelected;
         }
 
         private void btnConfirmBooking_Click(object sender, EventArgs e)
         {
+            if (!ValidateBookingInput())
+                return;
+
             try
             {
-                // Validate booking data before proceeding
-                if (!ValidateBookingData())
+                Guest guest;
+
+                if (rbNewGuest.Checked)
                 {
-                    return;
-                }
-                
-                // Calculate deposit amount
-                var nights = (dtpCheckOut.Value - dtpCheckIn.Value).Days;
-                var totalCost = nights * 150.00m; // Assuming $150 per night
-                var deposit = totalCost * 0.20m; // 20% deposit
-
-                // Show payment form for deposit
-                var paymentForm = new Payment(deposit);
-                if (paymentForm.ShowDialog() == DialogResult.OK && paymentForm.PaymentSuccessful)
-                {
-                    Guest guest;
-
-                    if (rbNewGuest.Checked)
+                    
+                    // Create new guest with validation
+                    guest = new Guest
                     {
-                        // Validate and create new guest
-                        if (!ValidateGuestData())
-                        {
-                            return;
-                        }
-                        
-                        guest = new Guest
-                        {
-                            Name = SanitizeInput(txtGuestName.Text.Trim()),
-                            Telephone = SanitizeInput(txtTelephone.Text.Trim()),
-                            AddressLine1 = SanitizeInput(txtAddress1.Text.Trim()),
-                            AddressLine2 = SanitizeInput(txtAddress2.Text.Trim()),
-                            PostalCode = SanitizeInput(txtPostalCode.Text.Trim()),
-                            DateBooked = DateTime.Now
-                        };
-                    }
-                    else
-                    {
-                        if (selectedGuest == null)
-                        {
-                            MessageBox.Show("Please select a guest.", "Validation Error", 
-                                          MessageBoxButtons.OK, MessageBoxIcon.Warning);
-                            return;
-                        }
-                        guest = selectedGuest;
-                    }
-
-                    // Create reservation
-                    var reservation = new Reservation
-                    {
-                        CheckInDate = dtpCheckIn.Value.Date,
-                        CheckOutDate = dtpCheckOut.Value.Date,
-                        Status = "confirmed",
+                        Name = ValidationHelper.SanitizeInput(txtGuestName.Text.Trim()),
+                        Telephone = txtTelephone.Text.Trim(),
+                        AddressLine1 = ValidationHelper.SanitizeInput(txtAddress1.Text.Trim()),
+                        AddressLine2 = ValidationHelper.SanitizeInput(txtAddress2.Text.Trim()),
+                        PostalCode = txtPostalCode.Text.Trim(),
                         DateBooked = DateTime.Now
                     };
+                }
+                else
+                {
+                    guest = selectedGuest;
+                }
+                int resid = reservationController.AllReservations
+                    .Select(res => res.ReservationID)
+                    .DefaultIfEmpty(0)
+                    .Max();
 
-                    // Save to database with proper error handling
-                    if (!SaveBookingToDatabase(guest, reservation))
-                    {
-                        MessageBox.Show("Failed to save booking to database. Please try again.", 
-                                      "Database Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                        return;
-                    }
+                // Create reservation
+                var reservation = new Reservation
+                {
+                    ReservationID=resid,
+                    BookingID = -1, // Ensure proper linking
+                    CheckInDate = dtpCheckIn.Value,
+                    CheckOutDate = dtpCheckOut.Value,
+                    Status = "confirmed",
+                    DateBooked = DateTime.Now
+                };
 
-                    MessageBox.Show("Booking confirmed and payment processed successfully!", 
-                                  "Success", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                // Use booker controller for transaction
+                if (bookerController.CreateBooking(guest, reservation))
+                {
+                    MessageBox.Show("Booking confirmed successfully!", "Success", 
+                                  MessageBoxButtons.OK, MessageBoxIcon.Information);
                     this.DialogResult = DialogResult.OK;
                     this.Close();
                 }
                 else
                 {
-                    MessageBox.Show("Booking cancelled - payment was not completed.", 
-                                  "Booking Cancelled", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                    MessageBox.Show("Failed to create booking. Please try again.", "Error", 
+                                  MessageBoxButtons.OK, MessageBoxIcon.Error);
                 }
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"Error creating booking: {ex.Message}\n\nStack Trace: {ex.StackTrace}", 
-                              "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                MessageBox.Show($"Error creating booking: {ex.Message}", "Error", 
+                              MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
-        
-        private bool ValidateBookingData()
+
+        private bool ValidateBookingInput()
         {
-            // Validate dates
-            if (dtpCheckIn.Value.Date < DateTime.Today)
+            if (rbNewGuest.Checked)
             {
-                MessageBox.Show("Check-in date cannot be in the past.", "Validation Error", 
-                              MessageBoxButtons.OK, MessageBoxIcon.Warning);
-                return false;
-            }
-            
-            if (dtpCheckOut.Value.Date <= dtpCheckIn.Value.Date)
-            {
-                MessageBox.Show("Check-out date must be after check-in date.", "Validation Error", 
-                              MessageBoxButtons.OK, MessageBoxIcon.Warning);
-                return false;
-            }
-            
-            // Validate availability was checked
-            if (!isAvailabilityChecked)
-            {
-                MessageBox.Show("Please check room availability first.", "Validation Error", 
-                              MessageBoxButtons.OK, MessageBoxIcon.Warning);
-                return false;
-            }
-            
-            return true;
-        }
-        
-        private bool ValidateGuestData()
-        {
-            // Validate guest name
-            if (string.IsNullOrWhiteSpace(txtGuestName.Text))
-            {
-                MessageBox.Show("Please enter guest name.", "Validation Error", 
-                              MessageBoxButtons.OK, MessageBoxIcon.Warning);
-                txtGuestName.Focus();
-                return false;
-            }
-            
-            if (txtGuestName.Text.Trim().Length < 2)
-            {
-                MessageBox.Show("Guest name must be at least 2 characters.", "Validation Error", 
-                              MessageBoxButtons.OK, MessageBoxIcon.Warning);
-                txtGuestName.Focus();
-                return false;
-            }
-            
-            // Validate telephone
-            if (string.IsNullOrWhiteSpace(txtTelephone.Text))
-            {
-                MessageBox.Show("Please enter telephone number.", "Validation Error", 
-                              MessageBoxButtons.OK, MessageBoxIcon.Warning);
-                txtTelephone.Focus();
-                return false;
-            }
-            
-            string phone = txtTelephone.Text.Trim().Replace(" ", "").Replace("-", "").Replace("(", "").Replace(")", "");
-            if (phone.Length < 10)
-            {
-                MessageBox.Show("Please enter a valid telephone number (at least 10 digits).", 
-                              "Validation Error", MessageBoxButtons.OK, MessageBoxIcon.Warning);
-                txtTelephone.Focus();
-                return false;
-            }
-            
-            // Validate address
-            if (string.IsNullOrWhiteSpace(txtAddress1.Text))
-            {
-                MessageBox.Show("Please enter address line 1.", "Validation Error", 
-                              MessageBoxButtons.OK, MessageBoxIcon.Warning);
-                txtAddress1.Focus();
-                return false;
-            }
-            
-            // Validate postal code
-            if (string.IsNullOrWhiteSpace(txtPostalCode.Text))
-            {
-                MessageBox.Show("Please enter postal code.", "Validation Error", 
-                              MessageBoxButtons.OK, MessageBoxIcon.Warning);
-                txtPostalCode.Focus();
-                return false;
-            }
-            
-            return true;
-        }
-        
-        private bool SaveBookingToDatabase(Guest guest, Reservation reservation)
-        {
-            try
-            {
-                if (hotelDB == null)
+                if (!ValidationHelper.IsValidName(txtGuestName.Text))
                 {
-                    MessageBox.Show("Database connection error.", "Error", 
-                                  MessageBoxButtons.OK, MessageBoxIcon.Error);
-                    return false;
-                }
-                
-                // Save guest
-                var guestObj = new HotelDB.HotelObject(guest);
-                hotelDB.DataSetChange(guestObj, DB.DBOperation.Add);
-                
-                if (!hotelDB.UpdateDataSource(guestObj))
-                {
+                    MessageBox.Show("Please enter a valid guest name.", "Validation Error", 
+                                  MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                    txtGuestName.Focus();
                     return false;
                 }
 
-                // Save reservation
-                var reservationObj = new HotelDB.HotelObject(reservation);
-                hotelDB.DataSetChange(reservationObj, DB.DBOperation.Add);
-                
-                return hotelDB.UpdateDataSource(reservationObj);
+                if (!ValidationHelper.IsValidPhoneNumber(txtTelephone.Text))
+                {
+                    MessageBox.Show("Please enter a valid phone number.", "Validation Error", 
+                                  MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                    txtTelephone.Focus();
+                    return false;
+                }
+
+                if (!string.IsNullOrWhiteSpace(txtPostalCode.Text) && 
+                    !ValidationHelper.IsValidPostalCode(txtPostalCode.Text))
+                {
+                    MessageBox.Show("Please enter a valid postal code.", "Validation Error", 
+                                  MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                    txtPostalCode.Focus();
+                    return false;
+                }
             }
-            catch (Exception ex)
+
+            if (!ValidationHelper.IsValidDateRange(dtpCheckIn.Value, dtpCheckOut.Value))
             {
-                MessageBox.Show($"Database error: {ex.Message}", "Error", 
-                              MessageBoxButtons.OK, MessageBoxIcon.Error);
+                MessageBox.Show("Please select valid dates.", "Validation Error", 
+                              MessageBoxButtons.OK, MessageBoxIcon.Warning);
                 return false;
             }
-        }
-        
-        private string SanitizeInput(string input)
-        {
-            if (string.IsNullOrEmpty(input))
-                return string.Empty;
-                
-            // Remove potentially dangerous characters while preserving normal text
-            return System.Text.RegularExpressions.Regex.Replace(input, @"[<>""';]", "");
+
+            return true;
         }
 
         private void btnCancel_Click(object sender, EventArgs e)
@@ -374,5 +349,7 @@ namespace PhumlaniKamnandi.Presentation
             pnlConfirmation.Visible = false;
             CheckBookingReadiness();
         }
+
+
     }
 }

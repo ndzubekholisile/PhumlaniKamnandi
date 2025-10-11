@@ -1,15 +1,20 @@
-﻿// ========== Employee Controller ==========
+// ========== Employee Controller ==========
 using System;
+using PhumlaniKamnandi.Data;
+using System.Collections.Generic;
+using System.Collections.ObjectModel;
+using PhumlaniKamnandi.Business;
+using System.Linq;
 
-namespace PhumlaKamnandi.Business
+namespace PhumlaniKamnandi.Business
 {
     public class EmployeeController
     {
         #region Constructor
-        public EmployeeController()
+        public EmployeeController(HotelDB hDB)
         {
-            hotelDB = new HotelDB();
-            employees = hotelDB.AllEmployees;
+            hotelDB = hDB;
+            employees = hotelDB.AllEmployees ?? new Collection<Employee>();
         }
         #endregion
 
@@ -32,7 +37,7 @@ namespace PhumlaKamnandi.Business
         public void DataMaintenance(Employee aEmployee, DB.DBOperation operation)
         {
             int index = 0;
-            hotelDB.DataSetChange(aEmployee, operation);
+            hotelDB.DataSetChange(new HotelDB.HotelObject(aEmployee), operation);
 
             switch (operation)
             {
@@ -53,37 +58,42 @@ namespace PhumlaKamnandi.Business
 
         public bool FinalizeChanges(Employee employee)
         {
-            return hotelDB.UpdateDataSource(employee);
+            return hotelDB.UpdateDataSource(new HotelDB.HotelObject(employee));
         }
         #endregion
 
         #region Find Methods
 
-        public Employee Find(string ID)
+        public Employee Find(int ID)
         {
+            if (employees == null || employees.Count == 0)
+                return null;
+
             int index = 0;
-            bool found = (employees[index].EmpID == ID);
+            bool found = (employees[index] != null && employees[index].EmpID == ID);
             int count = AllEmployees.Count;
 
             while (!(found) && (index < employees.Count - 1))
             {
                 index++;
-                found = (employees[index].EmpID == ID);
+                found = (employees[index] != null && employees[index].EmpID == ID);
             }
 
-
-            return AllEmployees[index];
+            return found ? AllEmployees[index] : null;
         }
 
         private int FindIndex(Employee aEmployee)
         {
+            if (employees == null || employees.Count == 0 || aEmployee == null)
+                return -1;
+
             int counter = 0;
             bool found = false;
-            found = (aEmployee.EmpID == employees[counter].EmpID);
-            while (!found && counter <= employees.Count)
+            found = (employees[counter] != null && aEmployee.EmpID == employees[counter].EmpID);
+            while (!found && counter < employees.Count - 1)
             {
                 counter++;
-                found = (aEmployee.EmpID == employees[counter].EmpID);
+                found = (employees[counter] != null && aEmployee.EmpID == employees[counter].EmpID);
             }
             if (found)
             {
@@ -94,6 +104,126 @@ namespace PhumlaKamnandi.Business
                 return -1;
             }
         }
+        #endregion
+
+        #region Authentication Methods
+        
+        /// <summary>
+        /// Authenticates a user with username and password
+        /// Returns the authenticated Employee object or null if authentication fails
+        /// </summary>
+        public Employee AuthenticateUser(string username, string password)
+        {
+            if (string.IsNullOrWhiteSpace(username) || string.IsNullOrWhiteSpace(password))
+                return null;
+
+            if (employees == null || employees.Count == 0)
+                return null;
+
+            // Find employee by username and validate password
+            var employee = employees.FirstOrDefault(e => 
+                e != null && e.MatchesUsername(username));
+
+            if (employee != null && employee.ValidatePassword(password))
+            {
+                return employee;
+            }
+
+            return null;
+        }
+
+        /// <summary>
+        /// Finds an employee by username (case-insensitive)
+        /// </summary>
+        public Employee FindByUsername(string username)
+        {
+            if (string.IsNullOrWhiteSpace(username))
+                return null;
+
+            if (employees == null || employees.Count == 0)
+                return null;
+
+            return employees.FirstOrDefault(e => 
+                e != null && e.MatchesUsername(username));
+        }
+
+        /// <summary>
+        /// Validates if a username exists in the system
+        /// </summary>
+        public bool UsernameExists(string username)
+        {
+            return FindByUsername(username) != null;
+        }
+
+        /// <summary>
+        /// Gets all employees with a specific role
+        /// </summary>
+        public List<Employee> GetEmployeesByRole(string role)
+        {
+            if (employees == null || string.IsNullOrWhiteSpace(role))
+                return new List<Employee>();
+
+            return employees.Where(e => e != null && e.HasRole(role)).ToList();
+        }
+
+        /// <summary>
+        /// Validates password strength (for future password change functionality)
+        /// </summary>
+        public bool ValidatePasswordStrength(string password, out string errorMessage)
+        {
+            errorMessage = string.Empty;
+
+            if (string.IsNullOrWhiteSpace(password))
+            {
+                errorMessage = "Password cannot be empty.";
+                return false;
+            }
+
+            if (password.Length < 4)
+            {
+                errorMessage = "Password must be at least 4 characters long.";
+                return false;
+            }
+
+            if (password.Length > 100)
+            {
+                errorMessage = "Password cannot exceed 100 characters.";
+                return false;
+            }
+
+            return true;
+        }
+
+        /// <summary>
+        /// Changes an employee's password (for future functionality)
+        /// </summary>
+        public bool ChangePassword(int empId, string oldPassword, string newPassword, out string errorMessage)
+        {
+            errorMessage = string.Empty;
+
+            var employee = Find(empId);
+            if (employee == null)
+            {
+                errorMessage = "Employee not found.";
+                return false;
+            }
+
+            if (!employee.ValidatePassword(oldPassword))
+            {
+                errorMessage = "Current password is incorrect.";
+                return false;
+            }
+
+            if (!ValidatePasswordStrength(newPassword, out errorMessage))
+            {
+                return false;
+            }
+
+            employee.Password = newPassword;
+            DataMaintenance(employee, DB.DBOperation.Edit);
+            return FinalizeChanges(employee);
+        }
+
         #endregion
     }
 }

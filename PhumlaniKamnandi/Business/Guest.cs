@@ -14,7 +14,7 @@ namespace PhumlaniKamnandi.Business
         public string PostalCode { get; set; }
         public DateTime DateBooked { get; set; }
 
-        public Guest() { }
+        public Guest() { BookingID = -1; }
 
         public Guest(int bookingId, string name, string telephone, string addressLine1, string addressLine2, string postalCode, DateTime dateBooked)
         {

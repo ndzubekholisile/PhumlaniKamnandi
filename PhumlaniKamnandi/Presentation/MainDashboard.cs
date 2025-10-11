@@ -1,4 +1,6 @@
-﻿using PhumlaniKamnandi.Data;
+using PhumlaniKamnandi.Data;
+using PhumlaniKamnandi.Business;
+using PhumlaniKamnandi.Presentation.Infrastructure;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -13,63 +15,165 @@ namespace PhumlaniKamnandi.Presentation
 {
     public partial class MainDashboard : Form
     {
+        private RoomController roomController;
+        private ReservationController reservationController;
         private HotelDB hotelDB;
 
-        public MainDashboard()
+        public MainDashboard(HotelDB hDB)
         {
             InitializeComponent();
-            hotelDB = new HotelDB();
+            InitializeControllers(hDB);
+            ValidateSession();
             LoadDashboardData();
+        }
+
+        private void InitializeControllers(HotelDB hDB)
+        {
+            try
+            {
+                hotelDB = hDB;
+                roomController = new RoomController(hDB);
+                reservationController = new ReservationController(hDB);
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Error initializing dashboard: {ex.Message}", "Error", 
+                              MessageBoxButtons.OK, MessageBoxIcon.Error);
+                Application.Exit();
+            }
+        }
+
+        private void ValidateSession()
+        {
+            try
+            {
+                SessionManager.ValidateSession();
+                
+                // Update UI with current user info if available
+                if (SessionManager.IsLoggedIn)
+                {
+                    string displayName = SessionManager.GetCurrentUserDisplayName();
+                    this.Text = $"Hotel Management System - Welcome {displayName}";
+                    
+                    // Update welcome label if it exists
+                    if (lblWelcome != null)
+                    {
+                        lblWelcome.Text = $"Welcome to the Hotel Management Dashboard, {displayName}";
+                    }
+                }
+            }
+            catch (UnauthorizedAccessException ex)
+            {
+                MessageBox.Show(ex.Message, "Session Expired", 
+                              MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                this.Hide();
+                var loginForm = new EmployeeLogin(hotelDB);
+                loginForm.ShowDialog();
+                if (!SessionManager.IsLoggedIn)
+                {
+                    Application.Exit();
+                }
+                else
+                {
+                    // Refresh dashboard after re-login
+                    ValidateSession();
+                    LoadDashboardData();
+                }
+                this.Show();
+            }
         }
 
         private void LoadDashboardData()
         {
             try
             {
-                // This will load the occupancy percentage
-                var totalRooms = hotelDB.AllRooms.Count;
-                var occupiedRooms = hotelDB.AllRooms.Count(r => r.IsOccupied);
-                var occupancyPercentage = totalRooms > 0 ? (occupiedRooms * 100.0) / totalRooms : 0;
+                // Validate controllers are initialized
+                if (roomController == null || reservationController == null)
+                {
+                    MessageBox.Show("Dashboard controllers are not initialized.", "Error", 
+                                  MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    return;
+                }
 
-                lblOccupancy.Text = $"Today's Occupancy: {occupancyPercentage:F1}%";
+                // Validate room data is available
+                if (roomController.AllRooms == null)
+                {
+                    lblOccupancy.Text = "Room data unavailable";
+                    pnlOccupancy.BackColor = Color.LightGray;
+                    return;
+                }
 
-                // This should update occupancy panel color based on percentage
+                // Use room controller for occupancy data
+                var totalRooms = roomController.AllRooms.Count;
+                var occupancyPercentage = roomController.GetOccupancyPercentage();
+                var availableRooms = roomController.GetAvailableRoomCount();
+
+                lblOccupancy.Text = $"Today's Occupancy: {occupancyPercentage:F1}% ({totalRooms - availableRooms}/{totalRooms} rooms)";
+
+                // Update occupancy panel color based on percentage
                 if (occupancyPercentage >= 90)
                     pnlOccupancy.BackColor = Color.FromArgb(255, 192, 192); // Light red
                 else if (occupancyPercentage >= 70)
                     pnlOccupancy.BackColor = Color.FromArgb(255, 255, 192); // Light yellow
                 else
                     pnlOccupancy.BackColor = Color.FromArgb(192, 255, 192); // Light green
+
+                // Load additional dashboard metrics if reservation data is available
+                if (reservationController.AllReservations != null)
+                {
+                    var activeReservations = reservationController.GetActiveReservations().Count;
+                    var todayCheckIns = reservationController.AllReservations
+                        .Count(r => r.CheckInDate.Date == DateTime.Today && r.Status == "confirmed");
+                    var todayCheckOuts = reservationController.AllReservations
+                        .Count(r => r.CheckOutDate.Date == DateTime.Today && r.Status == "confirmed");
+
+                    // Update additional labels if they exist
+                    UpdateDashboardMetrics(activeReservations, todayCheckIns, todayCheckOuts);
+                }
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"Error loading dashboard data: {ex.Message}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                MessageBox.Show($"Error loading dashboard data: {ex.Message}\n\nStack Trace: {ex.StackTrace}", 
+                              "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
+        }
+
+        private void UpdateDashboardMetrics(int activeReservations, int todayCheckIns, int todayCheckOuts)
+        {
+            // Update additional dashboard information if controls exist
+            // This method can be expanded based on your UI design
         }
 
         private void btnMakeNewBooking_Click(object sender, EventArgs e)
         {
-            var newBookingForm = new NewBooking();
+            var newBookingForm = new NewBooking(hotelDB);
             newBookingForm.ShowDialog();
             LoadDashboardData(); // ths will refresh the data after booking
         }
 
         private void btnManageBookings_Click(object sender, EventArgs e)
         {
-            var manageBookingsForm = new ManageBookings();
+            var manageBookingsForm = new ManageBookings(hotelDB);
             manageBookingsForm.ShowDialog();
             LoadDashboardData();
         }
 
         private void btnViewReports_Click(object sender, EventArgs e)
         {
-            var reportsForm = new ReportsDashboard();
+            var reportsForm = new ReportsDashboard(hotelDB);
             reportsForm.ShowDialog();
         }
 
         private void timerDateTime_Tick(object sender, EventArgs e)
         {
             lblDateTime.Text = DateTime.Now.ToString("dddd, MMMM dd, yyyy - HH:mm:ss");
+        }
+
+        protected override void OnFormClosing(FormClosingEventArgs e)
+        {
+            // End session when dashboard closes
+            SessionManager.EndSession();
+            base.OnFormClosing(e);
         }
     }
 }

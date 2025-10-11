@@ -1,4 +1,7 @@
-﻿namespace PhumlaniKamnandi.Presentation
+﻿using System.Windows.Forms;
+using System.Drawing;
+
+namespace PhumlaniKamnandi.Presentation
 {
     partial class GuestSearch
     {

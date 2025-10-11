@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace PhumlaniKamnandi.Business
 {
-    internal class Booker
+    public class Booker
     {
         public int BookingID { get; set; }   // Primary Key (IDENTITY)
         public int NumOfPeopleExpected { get; set; }

@@ -1,15 +1,20 @@
-﻿// ========== Booker Controller ==========
+// ========== Booker Controller ==========
 using System;
+using PhumlaniKamnandi.Data;
+using System.Collections.Generic;
+using System.Collections.ObjectModel;
+using PhumlaniKamnandi.Business;
+using System.Linq;
 
-namespace PhumlaKamnandi.Business
+namespace PhumlaniKamnandi.Business
 {
     public class BookerController
     {
         #region Constructor
-        public BookerController()
+        public BookerController(HotelDB hDB)
         {
-            hotelDB = new HotelDB();
-            bookers = hotelDB.AllBookers;
+            hotelDB = hDB;
+            bookers = hotelDB.AllBookers ?? new Collection<Booker>();
         }
         #endregion
 
@@ -32,7 +37,7 @@ namespace PhumlaKamnandi.Business
         public void DataMaintenance(Booker aBooker, DB.DBOperation operation)
         {
             int index = 0;
-            hotelDB.DataSetChange(aBooker, operation);
+            hotelDB.DataSetChange(new HotelDB.HotelObject(aBooker), operation);
 
             switch (operation)
             {
@@ -53,36 +58,41 @@ namespace PhumlaKamnandi.Business
 
         public bool FinalizeChanges(Booker booker)
         {
-            return hotelDB.UpdateDataSource(booker);
+            return hotelDB.UpdateDataSource(new HotelDB.HotelObject(booker));
         }
         #endregion
 
         #region Find Methods
-        public Booker Find(string ID)
+        public Booker Find(int ID)
         {
+            if (bookers == null || bookers.Count == 0)
+                return null;
+
             int index = 0;
-            bool found = (bookers[index].BookingID == ID);
+            bool found = (bookers[index] != null && bookers[index].BookingID == ID);
             int count = AllBookers.Count;
 
             while (!(found) && (index < bookers.Count - 1))
             {
                 index++;
-                found = (bookers[index].BookingID == ID);
+                found = (bookers[index] != null && bookers[index].BookingID == ID);
             }
 
-
-            return AllBookers[index];
+            return found ? AllBookers[index] : null;
         }
 
         private int FindIndex(Booker aBooker)
         {
+            if (bookers == null || bookers.Count == 0 || aBooker == null)
+                return -1;
+
             int counter = 0;
             bool found = false;
-            found = (aBooker.BookingID == bookers[counter].BookingID);
-            while (!found && counter <= bookers.Count)
+            found = (bookers[counter] != null && aBooker.BookingID == bookers[counter].BookingID);
+            while (!found && counter < bookers.Count - 1)
             {
                 counter++;
-                found = (aBooker.BookingID == bookers[counter].BookingID);
+                found = (bookers[counter] != null && aBooker.BookingID == bookers[counter].BookingID);
             }
             if (found)
             {
@@ -92,6 +102,228 @@ namespace PhumlaKamnandi.Business
             {
                 return -1;
             }
+        }
+        #endregion
+
+        #region Booking Operations
+        private GuestController guestController;
+        private ReservationController reservationController;
+
+
+        private void InitializeControllers(HotelDB hDB)
+        {
+            if (guestController == null)
+                guestController = new GuestController(hDB);
+            if (reservationController == null)
+                reservationController = new ReservationController(hotelDB);
+        }
+
+        public class BookingViewModel
+        {
+            public int ReservationID { get; set; }
+            public int BookingID { get; set; }
+            public string GuestName { get; set; }
+            public DateTime CheckInDate { get; set; }
+            public DateTime CheckOutDate { get; set; }
+            public string Status { get; set; }
+            public DateTime DateBooked { get; set; }
+            public string CheckIn => CheckInDate.ToShortDateString();
+            public string CheckOut => CheckOutDate.ToShortDateString();
+            public string DateBookedString => DateBooked.ToShortDateString();
+        }
+
+        public List<BookingViewModel> GetAllBookingsWithGuestInfo()
+        {
+            InitializeControllers(hotelDB);
+            var reservations = reservationController.AllReservations;
+            var guests = guestController.AllGuests;
+
+            if (reservations == null || guests == null)
+                return new List<BookingViewModel>();
+
+            return reservations.Where(r => r != null).Join(
+                guests.Where(g => g != null),
+                r => r.BookingID,
+                g => g.BookingID,
+                (r, g) => new BookingViewModel
+                {
+                    ReservationID = r.ReservationID,
+                    BookingID = r.BookingID,
+                    GuestName = g.Name,
+                    CheckInDate = r.CheckInDate,
+                    CheckOutDate = r.CheckOutDate,
+                    Status = r.Status,
+                    DateBooked = r.DateBooked
+                }).ToList();
+        }
+
+        public List<BookingViewModel> SearchBookings(string guestName = null, string bookingId = null)
+        {
+            var allBookings = GetAllBookingsWithGuestInfo();
+
+            if (!string.IsNullOrWhiteSpace(guestName))
+            {
+                allBookings = allBookings.Where(b => 
+                    b.GuestName.ToLower().Contains(guestName.ToLower())).ToList();
+            }
+
+            if (!string.IsNullOrWhiteSpace(bookingId))
+            {
+                allBookings = allBookings.Where(b => 
+                    b.BookingID.ToString().Contains(bookingId)).ToList();
+            }
+
+            return allBookings;
+        }
+
+        public bool CreateBooking(Guest guest, Reservation reservation)
+        {
+            InitializeControllers(hotelDB);
+            try
+            {
+                 int id = bookers.Max(bK => bK.BookingID);
+                
+                 guest.BookingID = id+1;
+                 reservation.BookingID = id+1;
+
+
+
+                // Add guest first
+                Booker b = new Booker { BookingID = (id + 1), NumOfPeopleExpected = 1 };
+                hotelDB.DataSetChange(new HotelDB.HotelObject(b), DB.DBOperation.Add);
+                hotelDB.UpdateDataSource(new HotelDB.HotelObject(b));
+
+                guestController.DataMaintenance(guest, DB.DBOperation.Edit);
+                if (!guestController.FinalizeChanges(guest))
+                    return false;
+
+                // Add reservation
+                reservationController.DataMaintenance(reservation, DB.DBOperation.Add);
+                return reservationController.FinalizeChanges(reservation);
+            }
+            catch (Exception)
+            {
+                return false;
+            }
+        }
+
+        public bool UpdateBooking(Guest guest, Reservation reservation)
+        {
+            InitializeControllers(hotelDB);
+            try
+            {
+                // Update guest
+                guestController.DataMaintenance(guest, DB.DBOperation.Edit);
+                if (!guestController.FinalizeChanges(guest))
+                    return false;
+
+                // Update reservation
+                reservationController.DataMaintenance(reservation, DB.DBOperation.Edit);
+                return reservationController.FinalizeChanges(reservation);
+            }
+            catch (Exception)
+            {
+                return false;
+            }
+        }
+
+        public bool CancelBooking(int reservationId)
+        {
+            InitializeControllers(hotelDB);
+            try
+            {
+                var reservation = reservationController.Find(reservationId);
+                if (reservation == null) return false;
+
+                reservation.Status = "cancelled";
+                reservationController.DataMaintenance(reservation, DB.DBOperation.Edit);
+                return reservationController.FinalizeChanges(reservation);
+            }
+            catch (Exception)
+            {
+                return false;
+            }
+        }
+        #endregion
+
+        #region Report Generation
+        public System.Data.DataTable GenerateOccupancyReport(DateTime startDate, DateTime endDate)
+        {
+            InitializeControllers(hotelDB);
+            var roomController = new RoomController(hotelDB);
+            var dt = new System.Data.DataTable();
+            dt.Columns.Add("Date", typeof(string));
+            dt.Columns.Add("Occupied Rooms", typeof(int));
+            dt.Columns.Add("Total Rooms", typeof(int));
+            dt.Columns.Add("Occupancy %", typeof(string));
+
+            var totalRooms = roomController.AllRooms != null ? roomController.AllRooms.Count : 0;
+            var allReservations = reservationController.AllReservations;
+
+            if (allReservations == null)
+                return dt;
+
+            for (var date = startDate; date <= endDate; date = date.AddDays(1))
+            {
+                var occupiedRooms = allReservations
+                    .Count(r => r != null && r.Status != null &&
+                               r.CheckInDate <= date && r.CheckOutDate > date &&
+                               (r.Status == "confirmed" || r.Status == "checked_in"));
+
+                var occupancyPercent = totalRooms > 0 ? (occupiedRooms * 100.0) / totalRooms : 0;
+
+                dt.Rows.Add(
+                    date.ToShortDateString(),
+                    occupiedRooms,
+                    totalRooms,
+                    $"{occupancyPercent:F1}%"
+                );
+            }
+
+            return dt;
+        }
+
+        public System.Data.DataTable GenerateRevenueReport(int year, int month)
+        {
+            InitializeControllers(hotelDB);
+            var dt = new System.Data.DataTable();
+            dt.Columns.Add("Week", typeof(string));
+            dt.Columns.Add("Bookings", typeof(int));
+            dt.Columns.Add("Revenue", typeof(decimal));
+            dt.Columns.Add("Average per Booking", typeof(decimal));
+
+            var startOfMonth = new DateTime(year, month, 1);
+            var endOfMonth = startOfMonth.AddMonths(1).AddDays(-1);
+            var allReservations = reservationController.AllReservations;
+
+            if (allReservations == null)
+                return dt;
+
+            for (int week = 1; week <= 5; week++)
+            {
+                var weekStart = startOfMonth.AddDays((week - 1) * 7);
+                var weekEnd = weekStart.AddDays(6);
+
+                if (weekEnd > endOfMonth) weekEnd = endOfMonth;
+
+                var weekBookings = allReservations
+                    .Where(r => r != null && r.Status != null &&
+                               r.DateBooked >= weekStart && r.DateBooked <= weekEnd &&
+                               r.Status != "cancelled")
+                    .ToList();
+
+                var totalRevenue = weekBookings.Sum(r => reservationController.CalculateReservationCost(r));
+                var avgPerBooking = weekBookings.Count > 0 ? totalRevenue / weekBookings.Count : 0;
+
+                dt.Rows.Add(
+                    $"Week {week}",
+                    weekBookings.Count,
+                    totalRevenue,
+                    avgPerBooking
+                );
+            }
+
+            return dt;
         }
         #endregion
     }

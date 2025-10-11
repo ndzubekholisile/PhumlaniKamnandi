@@ -1,5 +1,6 @@
-﻿using PhumlaniKamnandi.Business;
+using PhumlaniKamnandi.Business;
 using PhumlaniKamnandi.Data;
+using PhumlaniKamnandi.Presentation.Infrastructure;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -14,31 +15,52 @@ namespace PhumlaniKamnandi.Presentation
 {
     public partial class BookingDetails : Form
     {
-        private HotelDB hotelDB;
+        private ReservationController reservationController;
+        private GuestController guestController;
+        private BookerController bookerController;
         private Reservation currentReservation;
         private Guest currentGuest;
         private bool isEditMode = false;
+        private HotelDB hotelDB;
 
-        public BookingDetails(int reservationId)
+        public BookingDetails(int reservationId, HotelDB hDB)
         {
+            hotelDB=hDB;
             InitializeComponent();
-            hotelDB = new HotelDB();
+            InitializeControllers(hDB);
             LoadBookingDetails(reservationId);
             SetReadOnlyMode(true);
+        }
+
+        private void InitializeControllers(HotelDB hDB)
+        {
+            try
+            {
+                reservationController = new ReservationController(hDB);
+                guestController = new GuestController(hDB);
+                bookerController = new BookerController(hDB);
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Error initializing booking details: {ex.Message}", "Error", 
+                              MessageBoxButtons.OK, MessageBoxIcon.Error);
+                this.Close();
+            }
         }
 
         private void LoadBookingDetails(int reservationId)
         {
             try
             {
-                currentReservation = hotelDB.AllReservations.FirstOrDefault(r => r.ReservationID == reservationId);
+                // Use controllers to load data
+                currentReservation = reservationController.Find(reservationId);
                 if (currentReservation != null)
                 {
-                    currentGuest = hotelDB.AllGuests.FirstOrDefault(g => g.BookingID == currentReservation.BookingID);
+                    currentGuest = guestController.AllGuests.FirstOrDefault(g => g.BookingID == currentReservation.BookingID);
 
                     if (currentGuest != null)
                     {
-                        // These will populate guest details
+                        // Populate guest details
                         txtGuestName.Text = currentGuest.Name;
                         txtTelephone.Text = currentGuest.Telephone;
                         txtAddress1.Text = currentGuest.AddressLine1;
@@ -46,22 +68,27 @@ namespace PhumlaniKamnandi.Presentation
                         txtPostalCode.Text = currentGuest.PostalCode;
                         lblDateBooked.Text = $"Date Booked: {currentGuest.DateBooked.ToShortDateString()}";
 
-                        // These will populate reservation details
+                        // Populate reservation details
                         dtpCheckIn.Value = currentReservation.CheckInDate;
                         dtpCheckOut.Value = currentReservation.CheckOutDate;
                         lblStatus.Text = $"Status: {currentReservation.Status}";
                         lblReservationID.Text = $"Reservation ID: {currentReservation.ReservationID}";
                         lblBookingID.Text = $"Booking ID: {currentReservation.BookingID}";
 
-                        // This will alculate the costs
+                        // Calculate costs using controller methods
                         var nights = (currentReservation.CheckOutDate - currentReservation.CheckInDate).Days;
-                        var totalCost = nights * 150.00m;
-                        var deposit = totalCost * 0.20m;
+                        var totalCost = reservationController.CalculateReservationCost(currentReservation);
+                        var deposit = reservationController.CalculateDeposit(currentReservation);
 
                         lblTotalNights.Text = $"Total Nights: {nights}";
                         lblTotalCost.Text = $"Total Cost: ${totalCost:F2}";
                         lblDeposit.Text = $"Deposit Paid: ${deposit:F2}";
                     }
+                }
+                else
+                {
+                    MessageBox.Show("Reservation not found.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    this.Close();
                 }
             }
             catch (Exception ex)
@@ -121,35 +148,37 @@ namespace PhumlaniKamnandi.Presentation
             {
                 try
                 {
-                    // These will update the guest details
-                    currentGuest.Name = txtGuestName.Text.Trim();
+                    // Update guest details with sanitized input
+                    currentGuest.Name = ValidationHelper.SanitizeInput(txtGuestName.Text.Trim());
                     currentGuest.Telephone = txtTelephone.Text.Trim();
-                    currentGuest.AddressLine1 = txtAddress1.Text.Trim();
-                    currentGuest.AddressLine2 = txtAddress2.Text.Trim();
+                    currentGuest.AddressLine1 = ValidationHelper.SanitizeInput(txtAddress1.Text.Trim());
+                    currentGuest.AddressLine2 = ValidationHelper.SanitizeInput(txtAddress2.Text.Trim());
                     currentGuest.PostalCode = txtPostalCode.Text.Trim();
 
-                    // These will update the reservation details
+                    // Update reservation details
                     currentReservation.CheckInDate = dtpCheckIn.Value;
                     currentReservation.CheckOutDate = dtpCheckOut.Value;
 
-                    // These will save changes to the database
-                    var guestObj = new HotelDB.HotelObject(currentGuest);
-                    hotelDB.DataSetChange(guestObj, HotelDB.DBOperation.Edit);
-                    hotelDB.UpdateDataSource(guestObj);
+                    // Use booker controller for update transaction
+                    if (bookerController.UpdateBooking(currentGuest, currentReservation))
+                    {
+                        MessageBox.Show("Booking details updated successfully!", "Success", 
+                                      MessageBoxButtons.OK, MessageBoxIcon.Information);
 
-                    var reservationObj = new HotelDB.HotelObject(currentReservation);
-                    hotelDB.DataSetChange(reservationObj, HotelDB.DBOperation.Edit);
-                    hotelDB.UpdateDataSource(reservationObj);
-
-                    MessageBox.Show("Booking details updated successfully!", "Success", MessageBoxButtons.OK, MessageBoxIcon.Information);
-
-                    SetReadOnlyMode(true);
-                    isEditMode = false;
-                    LoadBookingDetails(currentReservation.ReservationID); // Refresh display
+                        SetReadOnlyMode(true);
+                        isEditMode = false;
+                        LoadBookingDetails(currentReservation.ReservationID); // Refresh display
+                    }
+                    else
+                    {
+                        MessageBox.Show("Failed to update booking details. Please try again.", "Error", 
+                                      MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    }
                 }
                 catch (Exception ex)
                 {
-                    MessageBox.Show($"Error saving changes: {ex.Message}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    MessageBox.Show($"Error saving changes: {ex.Message}", "Error", 
+                                  MessageBoxButtons.OK, MessageBoxIcon.Error);
                 }
             }
         }
@@ -163,21 +192,35 @@ namespace PhumlaniKamnandi.Presentation
 
         private bool ValidateInput()
         {
-            if (string.IsNullOrWhiteSpace(txtGuestName.Text))
+            if (!ValidationHelper.IsValidName(txtGuestName.Text))
             {
-                MessageBox.Show("Guest name is required.", "Validation Error", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                MessageBox.Show("Please enter a valid guest name.", "Validation Error", 
+                              MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                txtGuestName.Focus();
                 return false;
             }
 
-            if (string.IsNullOrWhiteSpace(txtTelephone.Text))
+            if (!ValidationHelper.IsValidPhoneNumber(txtTelephone.Text))
             {
-                MessageBox.Show("Telephone number is required.", "Validation Error", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                MessageBox.Show("Please enter a valid telephone number.", "Validation Error", 
+                              MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                txtTelephone.Focus();
                 return false;
             }
 
-            if (dtpCheckIn.Value >= dtpCheckOut.Value)
+            if (!string.IsNullOrWhiteSpace(txtPostalCode.Text) && 
+                !ValidationHelper.IsValidPostalCode(txtPostalCode.Text))
             {
-                MessageBox.Show("Check-out date must be after check-in date.", "Validation Error", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                MessageBox.Show("Please enter a valid postal code.", "Validation Error", 
+                              MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                txtPostalCode.Focus();
+                return false;
+            }
+
+            if (!ValidationHelper.IsValidDateRange(dtpCheckIn.Value, dtpCheckOut.Value))
+            {
+                MessageBox.Show("Please select valid dates. Check-out must be after check-in.", 
+                              "Validation Error", MessageBoxButtons.OK, MessageBoxIcon.Warning);
                 return false;
             }
 

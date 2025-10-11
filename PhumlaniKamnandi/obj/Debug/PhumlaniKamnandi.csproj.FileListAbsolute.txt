@@ -1,0 +1,61 @@
+C:\Users\Neo\source\repos\PhumlaniKamnandi\obj\Debug\PhumlaniKamnandi.csproj.AssemblyReference.cache
+C:\Users\Neo\source\repos\PhumlaniKamnandi\obj\Debug\PhumlaniKamnandi.Presentation.BookingDetails.resources
+C:\Users\Neo\source\repos\PhumlaniKamnandi\obj\Debug\PhumlaniKamnandi.Presentation.GuestSearch.resources
+C:\Users\Neo\source\repos\PhumlaniKamnandi\obj\Debug\PhumlaniKamnandi.Presentation.MainDashboard.resources
+C:\Users\Neo\source\repos\PhumlaniKamnandi\obj\Debug\PhumlaniKamnandi.Presentation.ManageBookings.resources
+C:\Users\Neo\source\repos\PhumlaniKamnandi\obj\Debug\PhumlaniKamnandi.Presentation.NewBooking.resources
+C:\Users\Neo\source\repos\PhumlaniKamnandi\obj\Debug\PhumlaniKamnandi.Presentation.ReportsDashboard.resources
+C:\Users\Neo\source\repos\PhumlaniKamnandi\obj\Debug\PhumlaniKamnandi.Presentation.ReportsViewer.resources
+C:\Users\Neo\source\repos\PhumlaniKamnandi\obj\Debug\PhumlaniKamnandi.Properties.Resources.resources
+C:\Users\Neo\source\repos\PhumlaniKamnandi\obj\Debug\PhumlaniKamnandi.csproj.GenerateResource.cache
+C:\Users\Neo\source\repos\PhumlaniKamnandi\obj\Debug\PhumlaniKamnandi.csproj.CoreCompileInputs.cache
+C:\Users\Neo\source\repos\PhumlaniKamnandi\bin\Debug\hotelDB.mdf
+C:\Users\Neo\source\repos\PhumlaniKamnandi\bin\Debug\hotelDB_log.ldf
+C:\Users\Neo\source\repos\PhumlaniKamnandi\bin\Debug\PhumlaniKamnandi.exe.config
+C:\Users\Neo\source\repos\PhumlaniKamnandi\bin\Debug\PhumlaniKamnandi.exe
+C:\Users\Neo\source\repos\PhumlaniKamnandi\bin\Debug\PhumlaniKamnandi.pdb
+C:\Users\Neo\source\repos\PhumlaniKamnandi\obj\Debug\PhumlaniKamnandi.exe
+C:\Users\Neo\source\repos\PhumlaniKamnandi\obj\Debug\PhumlaniKamnandi.pdb
+C:\Users\Neo\source\repos\PhumlaniKamnandi\obj\Debug\PhumlaniKamnandi.exe.config
+C:\Users\Neo\Downloads\PhumlaniKamnandi-main (2)\PhumlaniKamnandi-main\.vs\PhumlaniKamnandi\bin\Debug\hotelDB.mdf
+C:\Users\Neo\Downloads\PhumlaniKamnandi-main (2)\PhumlaniKamnandi-main\.vs\PhumlaniKamnandi\bin\Debug\hotelDB_log.ldf
+C:\Users\Neo\Downloads\PhumlaniKamnandi-main (2)\PhumlaniKamnandi-main\.vs\PhumlaniKamnandi\bin\Debug\PhumlaniKamnandi.exe.config
+C:\Users\Neo\Downloads\PhumlaniKamnandi-main (2)\PhumlaniKamnandi-main\.vs\PhumlaniKamnandi\bin\Debug\PhumlaniKamnandi.exe
+C:\Users\Neo\Downloads\PhumlaniKamnandi-main (2)\PhumlaniKamnandi-main\.vs\PhumlaniKamnandi\bin\Debug\PhumlaniKamnandi.pdb
+C:\Users\Neo\Downloads\PhumlaniKamnandi-main (2)\PhumlaniKamnandi-main\.vs\PhumlaniKamnandi\obj\Debug\PhumlaniKamnandi.csproj.AssemblyReference.cache
+C:\Users\Neo\Downloads\PhumlaniKamnandi-main (2)\PhumlaniKamnandi-main\.vs\PhumlaniKamnandi\obj\Debug\PhumlaniKamnandi.exe.config
+C:\Users\Neo\Downloads\PhumlaniKamnandi-main (2)\PhumlaniKamnandi-main\.vs\PhumlaniKamnandi\obj\Debug\PhumlaniKamnandi.Presentation.BookingDetails.resources
+C:\Users\Neo\Downloads\PhumlaniKamnandi-main (2)\PhumlaniKamnandi-main\.vs\PhumlaniKamnandi\obj\Debug\PhumlaniKamnandi.Presentation.GuestSearch.resources
+C:\Users\Neo\Downloads\PhumlaniKamnandi-main (2)\PhumlaniKamnandi-main\.vs\PhumlaniKamnandi\obj\Debug\PhumlaniKamnandi.Presentation.MainDashboard.resources
+C:\Users\Neo\Downloads\PhumlaniKamnandi-main (2)\PhumlaniKamnandi-main\.vs\PhumlaniKamnandi\obj\Debug\PhumlaniKamnandi.Presentation.ManageBookings.resources
+C:\Users\Neo\Downloads\PhumlaniKamnandi-main (2)\PhumlaniKamnandi-main\.vs\PhumlaniKamnandi\obj\Debug\PhumlaniKamnandi.Presentation.NewBooking.resources
+C:\Users\Neo\Downloads\PhumlaniKamnandi-main (2)\PhumlaniKamnandi-main\.vs\PhumlaniKamnandi\obj\Debug\PhumlaniKamnandi.Presentation.ReportsDashboard.resources
+C:\Users\Neo\Downloads\PhumlaniKamnandi-main (2)\PhumlaniKamnandi-main\.vs\PhumlaniKamnandi\obj\Debug\PhumlaniKamnandi.Presentation.ReportsViewer.resources
+C:\Users\Neo\Downloads\PhumlaniKamnandi-main (2)\PhumlaniKamnandi-main\.vs\PhumlaniKamnandi\obj\Debug\PhumlaniKamnandi.Properties.Resources.resources
+C:\Users\Neo\Downloads\PhumlaniKamnandi-main (2)\PhumlaniKamnandi-main\.vs\PhumlaniKamnandi\obj\Debug\PhumlaniKamnandi.csproj.GenerateResource.cache
+C:\Users\Neo\Downloads\PhumlaniKamnandi-main (2)\PhumlaniKamnandi-main\.vs\PhumlaniKamnandi\obj\Debug\PhumlaniKamnandi.csproj.CoreCompileInputs.cache
+C:\Users\Neo\Downloads\PhumlaniKamnandi-main (2)\PhumlaniKamnandi-main\.vs\PhumlaniKamnandi\obj\Debug\PhumlaniKamnandi.exe
+C:\Users\Neo\Downloads\PhumlaniKamnandi-main (2)\PhumlaniKamnandi-main\.vs\PhumlaniKamnandi\obj\Debug\PhumlaniKamnandi.pdb
+C:\Users\Neo\Downloads\PhumlaniKamnandi-main (2)\PhumlaniKamnandi-main\.vs\PhumlaniKamnandi\obj\Debug\PhumlaniKamnandi.Presentation.EmployeeLogin.resources
+C:\Users\Neo\Downloads\PhumlaniKamnandi-main (2)\PhumlaniKamnandi-main\.vs\PhumlaniKamnandi\obj\Debug\PhumlaniKamnandi.Presentation.Payment.resources
+C:\Users\ndzub\OneDrive\Documents\GitHub\PhumlaniKamnandi\PhumlaniKamnandi\bin\Debug\hotelDB.mdf
+C:\Users\ndzub\OneDrive\Documents\GitHub\PhumlaniKamnandi\PhumlaniKamnandi\bin\Debug\hotelDB_log.ldf
+C:\Users\ndzub\OneDrive\Documents\GitHub\PhumlaniKamnandi\PhumlaniKamnandi\bin\Debug\PhumlaniKamnandi.exe.config
+C:\Users\ndzub\OneDrive\Documents\GitHub\PhumlaniKamnandi\PhumlaniKamnandi\bin\Debug\PhumlaniKamnandi.exe
+C:\Users\ndzub\OneDrive\Documents\GitHub\PhumlaniKamnandi\PhumlaniKamnandi\bin\Debug\PhumlaniKamnandi.pdb
+C:\Users\ndzub\OneDrive\Documents\GitHub\PhumlaniKamnandi\PhumlaniKamnandi\obj\Debug\PhumlaniKamnandi.csproj.AssemblyReference.cache
+C:\Users\ndzub\OneDrive\Documents\GitHub\PhumlaniKamnandi\PhumlaniKamnandi\obj\Debug\PhumlaniKamnandi.Presentation.BookingDetails.resources
+C:\Users\ndzub\OneDrive\Documents\GitHub\PhumlaniKamnandi\PhumlaniKamnandi\obj\Debug\PhumlaniKamnandi.Presentation.EmployeeLogin.resources
+C:\Users\ndzub\OneDrive\Documents\GitHub\PhumlaniKamnandi\PhumlaniKamnandi\obj\Debug\PhumlaniKamnandi.Presentation.GuestSearch.resources
+C:\Users\ndzub\OneDrive\Documents\GitHub\PhumlaniKamnandi\PhumlaniKamnandi\obj\Debug\PhumlaniKamnandi.Presentation.MainDashboard.resources
+C:\Users\ndzub\OneDrive\Documents\GitHub\PhumlaniKamnandi\PhumlaniKamnandi\obj\Debug\PhumlaniKamnandi.Presentation.ManageBookings.resources
+C:\Users\ndzub\OneDrive\Documents\GitHub\PhumlaniKamnandi\PhumlaniKamnandi\obj\Debug\PhumlaniKamnandi.Presentation.NewBooking.resources
+C:\Users\ndzub\OneDrive\Documents\GitHub\PhumlaniKamnandi\PhumlaniKamnandi\obj\Debug\PhumlaniKamnandi.Presentation.Payment.resources
+C:\Users\ndzub\OneDrive\Documents\GitHub\PhumlaniKamnandi\PhumlaniKamnandi\obj\Debug\PhumlaniKamnandi.Presentation.ReportsDashboard.resources
+C:\Users\ndzub\OneDrive\Documents\GitHub\PhumlaniKamnandi\PhumlaniKamnandi\obj\Debug\PhumlaniKamnandi.Presentation.ReportsViewer.resources
+C:\Users\ndzub\OneDrive\Documents\GitHub\PhumlaniKamnandi\PhumlaniKamnandi\obj\Debug\PhumlaniKamnandi.Properties.Resources.resources
+C:\Users\ndzub\OneDrive\Documents\GitHub\PhumlaniKamnandi\PhumlaniKamnandi\obj\Debug\PhumlaniKamnandi.csproj.GenerateResource.cache
+C:\Users\ndzub\OneDrive\Documents\GitHub\PhumlaniKamnandi\PhumlaniKamnandi\obj\Debug\PhumlaniKamnandi.csproj.CoreCompileInputs.cache
+C:\Users\ndzub\OneDrive\Documents\GitHub\PhumlaniKamnandi\PhumlaniKamnandi\obj\Debug\PhumlaniKamnandi.exe
+C:\Users\ndzub\OneDrive\Documents\GitHub\PhumlaniKamnandi\PhumlaniKamnandi\obj\Debug\PhumlaniKamnandi.pdb
+C:\Users\ndzub\OneDrive\Documents\GitHub\PhumlaniKamnandi\PhumlaniKamnandi\obj\Debug\PhumlaniKamnandi.exe.config

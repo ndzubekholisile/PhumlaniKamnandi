@@ -1,24 +1,147 @@
-﻿-- Sample Booker data
+﻿﻿-- Sample Booker data
 INSERT INTO Booker (num_of_people_expected)
-VALUES (3);
+VALUES (3),
+(4),
+(1),
+(3),
+(5),
+(2),
+(6),
+(1),
+(3),
+(4);
 
--- Sample Employee data for testing login
+-- This Will Insert The Employee credentials
 INSERT INTO Employee (name, role, username, password)
-VALUES 
+VALUES ('Hotel Clerk', 'Clerk', 'Clerk001', 'PK007'),
     ('John Smith', 'Manager', 'admin', 'admin123'),
     ('Jane Doe', 'Receptionist', 'jane.doe', 'password'),
     ('Mike Johnson', 'Supervisor', 'mike.j', 'mike123');
 
--- Sample Room Account data
-INSERT INTO RoomAccount (balance, status)
-VALUES 
-    (0.00, 'settled'),
-    (150.00, 'outstanding'),
-    (0.00, 'settled');
 
--- Sample Room data
-INSERT INTO Room (accountID, isOccupied, suiteType)
+    
+INSERT INTO [dbo].Guest (bookingID, name, telephone, addressLine1, addressLine2, postalCode)
 VALUES 
-    (1, 0, 'standard'),
-    (2, 1, 'deluxe'),
-    (3, 0, 'executive');
+(1, 'Alice Johnson', '5251234416', '123 Maple Street', NULL, '2210'),
+(1, 'Bob Smith', '1235678862', '456 Oak Avenue', NULL, '1001'),
+(1, 'Carla Martinez', '7898765123', '789 Pine Road', 'Suite 10', '3003'),
+(1, 'David Lee', '1484321123', '321 Elm Street', NULL, '0606'),
+(1, 'Ella Chen', '1574328023', '654 Cedar Lane', 'Unit 2C', '2002'),
+(1, 'Frank Wright', '1058264879', '987 Birch Blvd', NULL, '9101'),
+(1, 'Grace Patel', '1038664978', '159 Spruce Way', NULL, '3101'),
+(1, 'Hassan Khan', '1039573682', '753 Aspen Dr', 'Building B', '8500'),
+(1, 'Isabella Rossi', '7028529687', '852 Redwood Ct', NULL, '7701'),
+(1, 'Jack Nguyen', '2837496084', '456 Willow St', 'Floor 5', '4822'),
+(1, 'Nkosinathi Mthembu', '555-1597', '14 Lungelo Drive', 'Mtimkhulu', '4001'),
+(1, 'John Smith', '555-1597', '7 Main Rd', 'Rondebosch', '7700');
+
+
+INSERT INTO RoomAccount (balance, status) VALUES
+(450.00, 'settled'),
+(0.00, 'unsettled'),
+(1200.50, 'settled'),
+(350.75, 'settled'),
+(0.00, 'unsettled'),
+(980.00, 'settled'),
+(0.00, 'unsettled'),
+(250.30, 'settled'),
+(0.00, 'unsettled'),
+(640.00, 'settled'),
+(500.25, 'settled'),
+(0.00, 'unsettled'),
+(750.00, 'settled'),
+(0.00, 'unsettled'),
+(230.50, 'settled'),
+(0.00, 'unsettled'),
+(890.00, 'settled'),
+(0.00, 'unsettled'),
+(1020.00, 'settled'),
+(0.00, 'unsettled'),
+(410.00, 'settled'),
+(0.00, 'unsettled'),
+(325.60, 'settled'),
+(0.00, 'unsettled'),
+(765.45, 'settled'),
+(0.00, 'unsettled'),
+(1190.00, 'settled'),
+(0.00, 'unsettled'),
+(540.20, 'settled'),
+(0.00, 'unsettled'),
+(980.90, 'settled'),
+(0.00, 'unsettled'),
+(640.00, 'settled'),
+(0.00, 'unsettled'),
+(310.00, 'settled'),
+(0.00, 'unsettled'),
+(890.00, 'settled'),
+(0.00, 'unsettled'),
+(120.00, 'settled'),
+(0.00, 'unsettled'),
+(715.00, 'settled'),
+(0.00, 'unsettled'),
+(980.00, 'settled'),
+(0.00, 'unsettled'),
+(455.00, 'settled'),
+(0.00, 'unsettled'),
+(620.00, 'settled'),
+(0.00, 'unsettled'),
+(790.00, 'settled'),
+(0.00, 'unsettled'),
+(1000.00, 'settled');
+
+
+INSERT INTO Room (accountID, isOccupied, suiteType) VALUES
+(1, 0, 'standard'),
+(2, 0, 'deluxe'),
+(3, 0, 'standard'),
+(4, 0, 'deluxe'),
+(5, 0, 'standard'),
+(6, 0, 'deluxe'),
+(7, 0, 'standard'),
+(8, 0, 'deluxe'),
+(9, 0, 'standard'),
+(10, 0, 'deluxe'),
+
+(11, 0, 'standard'),
+(12, 0, 'deluxe'),
+(13, 0, 'standard'),
+(14, 0, 'deluxe'),
+(15, 0, 'standard'),
+(16, 0, 'deluxe'),
+(17, 0, 'standard'),
+(18, 0, 'deluxe'),
+(19, 0, 'standard'),
+(20, 0, 'deluxe'),
+
+(21, 0, 'standard'),
+(22, 0, 'deluxe'),
+(23, 0, 'standard'),
+(24, 0, 'deluxe'),
+(25, 0, 'standard'),
+(26, 0, 'deluxe'),
+(27, 0, 'standard'),
+(28, 0, 'deluxe'),
+(29, 0, 'standard'),
+(30, 0, 'deluxe'),
+
+(31, 0, 'standard'),
+(32, 0, 'deluxe'),
+(33, 0, 'standard'),
+(34, 0, 'deluxe'),
+(35, 0, 'standard'),
+(36, 0, 'deluxe'),
+(37, 0, 'standard'),
+(38, 0, 'deluxe'),
+(39, 0, 'standard'),
+(40, 0, 'deluxe'),
+
+(41, 0, 'standard'),
+(42, 0, 'deluxe'),
+(43, 0, 'standard'),
+(44, 0, 'deluxe'),
+(45, 0, 'standard'),
+(46, 0, 'deluxe'),
+(47, 0, 'standard'),
+(48, 0, 'deluxe'),
+(49, 0, 'standard'),
+(50, 0, 'deluxe');

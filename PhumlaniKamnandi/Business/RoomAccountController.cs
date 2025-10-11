@@ -1,15 +1,20 @@
-﻿// ========== Room Account Controller ==========
+// ========== Room Account Controller ==========
 using System;
+using PhumlaniKamnandi.Data;
+using System.Collections.Generic;
+using System.Collections.ObjectModel;
+using PhumlaniKamnandi.Business;
+using System.Linq;
 
-namespace PhumlaKamnandi.Business
+namespace PhumlaniKamnandi.Business
 {
     public class RoomAccountController
     {
         #region Constructor
-        public RoomAccountController()
+        public RoomAccountController(HotelDB hDB)
         {
-            hotelDB = new HotelDB();
-            roomaccounts = hotelDB.AllRoomAccounts;
+            hotelDB = hDB;
+            roomaccounts = hotelDB.AllRoomAccounts ?? new Collection<RoomAccount>();
         }
         #endregion
 
@@ -32,7 +37,7 @@ namespace PhumlaKamnandi.Business
         public void DataMaintenance(RoomAccount aRoomAccount, DB.DBOperation operation)
         {
             int index = 0;
-            hotelDB.DataSetChange(aRoomAccount, operation);
+            hotelDB.DataSetChange(new HotelDB.HotelObject(aRoomAccount), operation);
 
             switch (operation)
             {
@@ -53,36 +58,41 @@ namespace PhumlaKamnandi.Business
 
         public bool FinalizeChanges(RoomAccount roomaccount)
         {
-            return hotelDB.UpdateDataSource(roomaccount);
+            return hotelDB.UpdateDataSource(new HotelDB.HotelObject(roomaccount));
         }
         #endregion
 
         #region Find Methods
-        public RoomAccount Find(string ID)
+        public RoomAccount Find(int ID)
         {
+            if (roomaccounts == null || roomaccounts.Count == 0)
+                return null;
+
             int index = 0;
-            bool found = (roomaccounts[index].AccountID == ID);
+            bool found = (roomaccounts[index] != null && roomaccounts[index].AccountID == ID);
             int count = AllRoomAccounts.Count;
 
             while (!(found) && (index < roomaccounts.Count - 1))
             {
                 index++;
-                found = (roomaccounts[index].AccountID == ID);
+                found = (roomaccounts[index] != null && roomaccounts[index].AccountID == ID);
             }
 
-
-            return AllRoomAccounts[index];
+            return found ? AllRoomAccounts[index] : null;
         }
 
         private int FindIndex(RoomAccount aRoomAccount)
         {
+            if (roomaccounts == null || roomaccounts.Count == 0 || aRoomAccount == null)
+                return -1;
+
             int counter = 0;
             bool found = false;
-            found = (aRoomAccount.AccountID == roomaccounts[counter].AccountID);
-            while (!found && counter <= roomaccounts.Count)
+            found = (roomaccounts[counter] != null && aRoomAccount.AccountID == roomaccounts[counter].AccountID);
+            while (!found && counter < roomaccounts.Count - 1)
             {
                 counter++;
-                found = (aRoomAccount.AccountID == roomaccounts[counter].AccountID);
+                found = (roomaccounts[counter] != null && aRoomAccount.AccountID == roomaccounts[counter].AccountID);
             }
             if (found)
             {

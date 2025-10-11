@@ -1,5 +1,6 @@
-﻿using PhumlaniKamnandi.Business;
+using PhumlaniKamnandi.Business;
 using PhumlaniKamnandi.Data;
+using PhumlaniKamnandi.Presentation.Infrastructure;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -14,13 +15,13 @@ namespace PhumlaniKamnandi.Presentation
 {
     public partial class GuestSearch : Form
     {
-        private HotelDB hotelDB;
+        private GuestController guestController;
         public Guest SelectedGuest { get; private set; }
 
-        public GuestSearch()
+        public GuestSearch(GuestController guestCtrl)
         {
             InitializeComponent();
-            hotelDB = new HotelDB();
+            guestController = guestCtrl;
             LoadGuests();
         }
 
@@ -28,30 +29,8 @@ namespace PhumlaniKamnandi.Presentation
         {
             try
             {
-                var guests = hotelDB.AllGuests.ToList();
-                dgvGuests.DataSource = guests.Select(g => new
-                {
-                    g.GuestID,
-                    g.Name,
-                    g.Telephone,
-                    g.AddressLine1,
-                    g.AddressLine2,
-                    g.PostalCode,
-                    DateBooked = g.DateBooked.ToShortDateString()
-                }).ToList();
-
-                // Configure DataGridView
-                dgvGuests.Columns["GuestID"].HeaderText = "ID";
-                dgvGuests.Columns["Name"].HeaderText = "Guest Name";
-                dgvGuests.Columns["Telephone"].HeaderText = "Phone";
-                dgvGuests.Columns["AddressLine1"].HeaderText = "Address";
-                dgvGuests.Columns["AddressLine2"].Visible = false;
-                dgvGuests.Columns["PostalCode"].Visible = false;
-                dgvGuests.Columns["DateBooked"].HeaderText = "Date Booked";
-
-                dgvGuests.AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.Fill;
-                dgvGuests.SelectionMode = DataGridViewSelectionMode.FullRowSelect;
-                dgvGuests.MultiSelect = false;
+                var guests = guestController.AllGuests.ToList();
+                DisplayGuests(guests);
             }
             catch (Exception ex)
             {
@@ -59,9 +38,36 @@ namespace PhumlaniKamnandi.Presentation
             }
         }
 
+        private void DisplayGuests(List<Guest> guests)
+        {
+            dgvGuests.DataSource = guests.Select(g => new
+            {
+                g.GuestID,
+                g.Name,
+                g.Telephone,
+                g.AddressLine1,
+                g.AddressLine2,
+                g.PostalCode,
+                DateBooked = g.DateBooked.ToShortDateString()
+            }).ToList();
+
+            // Configure DataGridView
+            dgvGuests.Columns["GuestID"].HeaderText = "ID";
+            dgvGuests.Columns["Name"].HeaderText = "Guest Name";
+            dgvGuests.Columns["Telephone"].HeaderText = "Phone";
+            dgvGuests.Columns["AddressLine1"].HeaderText = "Address";
+            dgvGuests.Columns["AddressLine2"].Visible = false;
+            dgvGuests.Columns["PostalCode"].Visible = false;
+            dgvGuests.Columns["DateBooked"].HeaderText = "Date Booked";
+
+            dgvGuests.AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.Fill;
+            dgvGuests.SelectionMode = DataGridViewSelectionMode.FullRowSelect;
+            dgvGuests.MultiSelect = false;
+        }
+
         private void txtSearch_TextChanged(object sender, EventArgs e)
         {
-            string searchTerm = txtSearch.Text.ToLower();
+            string searchTerm = ValidationHelper.SanitizeInput(txtSearch.Text);
 
             if (string.IsNullOrWhiteSpace(searchTerm))
             {
@@ -71,21 +77,9 @@ namespace PhumlaniKamnandi.Presentation
 
             try
             {
-                var filteredGuests = hotelDB.AllGuests
-                    .Where(g => g.Name.ToLower().Contains(searchTerm))
-                    .Select(g => new
-                    {
-                        g.GuestID,
-                        g.Name,
-                        g.Telephone,
-                        g.AddressLine1,
-                        g.AddressLine2,
-                        g.PostalCode,
-                        DateBooked = g.DateBooked.ToShortDateString()
-                    })
-                    .ToList();
-
-                dgvGuests.DataSource = filteredGuests;
+                // Use controller search method
+                var filteredGuests = guestController.SearchGuests(searchTerm);
+                DisplayGuests(filteredGuests);
             }
             catch (Exception ex)
             {
@@ -100,12 +94,17 @@ namespace PhumlaniKamnandi.Presentation
                 var selectedRow = dgvGuests.SelectedRows[0];
                 int guestId = (int)selectedRow.Cells["GuestID"].Value;
 
-                SelectedGuest = hotelDB.AllGuests.FirstOrDefault(g => g.GuestID == guestId);
+                // Use controller to find guest
+                SelectedGuest = guestController.FindByGuestId(guestId);
 
                 if (SelectedGuest != null)
                 {
                     this.DialogResult = DialogResult.OK;
                     this.Close();
+                }
+                else
+                {
+                    MessageBox.Show("Error retrieving selected guest.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
                 }
             }
             else

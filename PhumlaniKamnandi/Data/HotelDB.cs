@@ -6,7 +6,7 @@ using PhumlaniKamnandi.Business;
 
 namespace PhumlaniKamnandi.Data
 {
-    internal class HotelDB : DB
+    public class HotelDB : DB
     {
         #region String literals and Constants
         // Booker
@@ -163,10 +163,40 @@ namespace PhumlaniKamnandi.Data
         }
         #endregion
 
+        public void Add2Collection(string atable)
         #region Utility Methods
 
-        public void Add2Collection(string atable)
         {
+            switch (atable)
+            {
+                case table1:
+                    bookers.Clear();
+                    break;
+                case table2:
+                    roomAccounts.Clear();
+                    break;
+
+                case table3:
+                    rooms.Clear();
+                    break;
+                case table4:
+                    reservations.Clear();
+                    break;
+                case table5:
+                    guests.Clear();
+                    break;
+                case table6:
+                    employees.Clear();
+                    break;
+
+            }
+           
+           
+            
+           
+            
+           
+
             DataRow myRow;
 
             Booker aBooker;
@@ -187,7 +217,7 @@ namespace PhumlaniKamnandi.Data
                     switch (atable)
                     {
                         case table1: // Booker
-                            bookers.Clear();
+                           
                             aBooker = new Booker
                             {
                                 BookingID = Convert.ToInt32(myRow["bookingID"]),
@@ -199,7 +229,7 @@ namespace PhumlaniKamnandi.Data
                             break;
 
                         case table2: // RoomAccount
-                            roomAccounts.Clear();
+                            
                             aRoomAccount = new RoomAccount
                             {
                                 AccountID = Convert.ToInt32(myRow["accountID"]),
@@ -210,7 +240,7 @@ namespace PhumlaniKamnandi.Data
                             break;
 
                         case table3: // Rooms
-                            rooms.Clear();
+                            
                             aRoom = new Room
                             {
                                 RoomID = Convert.ToInt32(myRow["roomID"]),
@@ -222,7 +252,7 @@ namespace PhumlaniKamnandi.Data
                             break;
 
                         case table4: // Reservation
-                            reservations.Clear();
+                            
                             aReservation = new Reservation
                             {
                                 ReservationID = Convert.ToInt32(myRow["reservationID"]),
@@ -236,7 +266,7 @@ namespace PhumlaniKamnandi.Data
                             break;
 
                         case table5: // Guest
-                            guests.Clear();
+                           
                             aGuest = new Guest
                             {
                                 GuestID = Convert.ToInt32(myRow["guestID"]),
@@ -252,7 +282,7 @@ namespace PhumlaniKamnandi.Data
                             break;
 
                         case table6: // Employee
-                            employees.Clear();
+                            
                             anEmp = new Employee
                             {
                                 EmpID = Convert.ToInt32(myRow["empID"]),
@@ -385,7 +415,7 @@ namespace PhumlaniKamnandi.Data
                     aRow["reservationID"] = res.ReservationID;
                     aRow["bookingID"] = res.BookingID;
                     aRow["check_in_date"] = res.CheckInDate;
-                    aRow["check_in_date"] = res.CheckOutDate;
+                    aRow["check_out_date"] = res.CheckOutDate;
                     aRow["status"] = res.Status;
                     aRow["date_booked"] = res.DateBooked;
                     break;
@@ -843,7 +873,7 @@ namespace PhumlaniKamnandi.Data
             {
                 case HotelObject.HotelObjectType.Booker:
                     daMain.InsertCommand = new SqlCommand(
-                        "INSERT INTO Booker (num_of_people_expected) VALUES (@NumOfPeopleExpected)",
+                        "INSERT INTO Booker (bookingID, num_of_people_expected) VALUES (@BookingID,@NumOfPeopleExpected)",
                         cnMain
                     );
                     break;
@@ -864,8 +894,8 @@ namespace PhumlaniKamnandi.Data
 
                 case HotelObject.HotelObjectType.Reservation:
                     daMain.InsertCommand = new SqlCommand(
-                        "INSERT INTO Reservation (bookingID, check_in_date, check_out_date, status, date_booked) "
-                            + "VALUES (@BookingID, @CheckInDate, @CheckOutDate, @Status, @DateBooked)",
+                        "INSERT INTO Reservation (reservationID,bookingID, check_in_date, check_out_date, status, date_booked) "
+                            + "VALUES (@ReservationID,@BookingID, @CheckInDate, @CheckOutDate, @Status, @DateBooked)",
                         cnMain
                     );
                     break;

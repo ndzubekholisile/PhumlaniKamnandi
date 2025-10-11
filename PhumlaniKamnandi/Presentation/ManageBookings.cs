@@ -1,5 +1,6 @@
-﻿using PhumlaniKamnandi.Data;
+using PhumlaniKamnandi.Data;
 using PhumlaniKamnandi.Business;
+using PhumlaniKamnandi.Presentation.Infrastructure;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -14,64 +15,73 @@ namespace PhumlaniKamnandi.Presentation
 {
     public partial class ManageBookings : Form
     {
+        private BookerController bookerController;
+        private ReservationController reservationController;
         private HotelDB hotelDB;
 
-        public ManageBookings()
+        public ManageBookings(HotelDB hDB)
         {
+            hotelDB = hDB;
             InitializeComponent();
-            hotelDB = new HotelDB();
+            InitializeControllers(hDB);
             LoadBookings();
+        }
+
+        private void InitializeControllers(HotelDB hDB)
+        {
+            try
+            {
+                bookerController = new BookerController(hDB);
+                reservationController = new ReservationController(hDB);
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Error initializing manage bookings: {ex.Message}", "Error", 
+                              MessageBoxButtons.OK, MessageBoxIcon.Error);
+                this.Close();
+            }
         }
 
         private void LoadBookings()
         {
             try
             {
-                var bookings = hotelDB.AllReservations.Join(
-                    hotelDB.AllGuests,
-                    r => r.BookingID,
-                    g => g.BookingID,
-                    (r, g) => new
-                    {
-                        r.ReservationID,
-                        r.BookingID,
-                        GuestName = g.Name,
-                        r.CheckInDate,
-                        r.CheckOutDate,
-                        r.Status,
-                        r.DateBooked
-                    }).ToList();
-
-                dgvBookings.DataSource = bookings.Select(b => new
-                {
-                    b.ReservationID,
-                    b.BookingID,
-                    b.GuestName,
-                    CheckIn = b.CheckInDate.ToShortDateString(),
-                    CheckOut = b.CheckOutDate.ToShortDateString(),
-                    b.Status,
-                    DateBooked = b.DateBooked.ToShortDateString()
-                }).ToList();
-
-                // This will configure the DataGridView
-                dgvBookings.Columns["ReservationID"].HeaderText = "Reservation ID";
-                dgvBookings.Columns["BookingID"].HeaderText = "Booking ID";
-                dgvBookings.Columns["GuestName"].HeaderText = "Guest Name";
-                dgvBookings.Columns["CheckIn"].HeaderText = "Check-in";
-                dgvBookings.Columns["CheckOut"].HeaderText = "Check-out";
-                dgvBookings.Columns["Status"].HeaderText = "Status";
-                dgvBookings.Columns["DateBooked"].HeaderText = "Date Booked";
-
-                dgvBookings.AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.Fill;
-                dgvBookings.SelectionMode = DataGridViewSelectionMode.FullRowSelect;
-                dgvBookings.MultiSelect = false;
-
+                // Use booker controller for complex operations
+                var bookings = bookerController.GetAllBookingsWithGuestInfo();
+                DisplayBookings(bookings);
                 UpdateButtonStates();
             }
             catch (Exception ex)
             {
                 MessageBox.Show($"Error loading bookings: {ex.Message}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
+        }
+
+        private void DisplayBookings(List<BookerController.BookingViewModel> bookings)
+        {
+            dgvBookings.DataSource = bookings.Select(b => new
+            {
+                b.ReservationID,
+                b.BookingID,
+                b.GuestName,
+                b.CheckIn,
+                b.CheckOut,
+                b.Status,
+                b.DateBookedString
+            }).ToList();
+
+            // Configure the DataGridView
+            dgvBookings.Columns["ReservationID"].HeaderText = "Reservation ID";
+            dgvBookings.Columns["BookingID"].HeaderText = "Booking ID";
+            dgvBookings.Columns["GuestName"].HeaderText = "Guest Name";
+            dgvBookings.Columns["CheckIn"].HeaderText = "Check-in";
+            dgvBookings.Columns["CheckOut"].HeaderText = "Check-out";
+            dgvBookings.Columns["Status"].HeaderText = "Status";
+            dgvBookings.Columns["DateBookedString"].HeaderText = "Date Booked";
+
+            dgvBookings.AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.Fill;
+            dgvBookings.SelectionMode = DataGridViewSelectionMode.FullRowSelect;
+            dgvBookings.MultiSelect = false;
         }
 
         private void UpdateButtonStates()
@@ -93,41 +103,14 @@ namespace PhumlaniKamnandi.Presentation
 
         private void FilterBookings()
         {
-            string guestSearch = txtSearchGuest.Text.ToLower();
-            string bookingIdSearch = txtSearchBookingID.Text.ToLower();
+            string guestSearch = ValidationHelper.SanitizeInput(txtSearchGuest.Text);
+            string bookingIdSearch = ValidationHelper.SanitizeInput(txtSearchBookingID.Text);
 
             try
             {
-                var filteredBookings = hotelDB.AllReservations.Join(
-                    hotelDB.AllGuests,
-                    r => r.BookingID,
-                    g => g.BookingID,
-                    (r, g) => new
-                    {
-                        r.ReservationID,
-                        r.BookingID,
-                        GuestName = g.Name,
-                        r.CheckInDate,
-                        r.CheckOutDate,
-                        r.Status,
-                        r.DateBooked
-                    })
-                    .Where(b =>
-                        (string.IsNullOrWhiteSpace(guestSearch) || b.GuestName.ToLower().Contains(guestSearch)) &&
-                        (string.IsNullOrWhiteSpace(bookingIdSearch) || b.BookingID.ToString().Contains(bookingIdSearch)))
-                    .Select(b => new
-                    {
-                        b.ReservationID,
-                        b.BookingID,
-                        b.GuestName,
-                        CheckIn = b.CheckInDate.ToShortDateString(),
-                        CheckOut = b.CheckOutDate.ToShortDateString(),
-                        b.Status,
-                        DateBooked = b.DateBooked.ToShortDateString()
-                    })
-                    .ToList();
-
-                dgvBookings.DataSource = filteredBookings;
+                // Use booker controller for search
+                var filteredBookings = bookerController.SearchBookings(guestSearch, bookingIdSearch);
+                DisplayBookings(filteredBookings);
             }
             catch (Exception ex)
             {
@@ -139,10 +122,10 @@ namespace PhumlaniKamnandi.Presentation
         {
             if (dgvBookings.SelectedRows.Count > 0)
             {
-                var selectedRow = dgvBookings.SelectedRows[0];
+                DataGridViewRow selectedRow = dgvBookings.SelectedRows[0];
                 int reservationId = (int)selectedRow.Cells["ReservationID"].Value;
 
-                var bookingDetailsForm = new BookingDetails(reservationId);
+                BookingDetails bookingDetailsForm = new BookingDetails(reservationId, hotelDB);
                 bookingDetailsForm.ShowDialog();
                 LoadBookings(); // This will refresh after there are potential changes made
             }
@@ -166,21 +149,23 @@ namespace PhumlaniKamnandi.Presentation
                 {
                     try
                     {
-                        var reservation = hotelDB.AllReservations.FirstOrDefault(r => r.ReservationID == reservationId);
-                        if (reservation != null)
+                        // Use booker controller for cancellation
+                        if (bookerController.CancelBooking(reservationId))
                         {
-                            reservation.Status = "cancelled";
-                            var hotelObj = new HotelDB.HotelObject(reservation);
-                            hotelDB.DataSetChange(hotelObj, HotelDB.DBOperation.Edit);
-                            hotelDB.UpdateDataSource(hotelObj);
-
-                            MessageBox.Show("Booking cancelled successfully.", "Success", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                            MessageBox.Show("Booking cancelled successfully.", "Success", 
+                                          MessageBoxButtons.OK, MessageBoxIcon.Information);
                             LoadBookings();
+                        }
+                        else
+                        {
+                            MessageBox.Show("Failed to cancel booking. Please try again.", "Error", 
+                                          MessageBoxButtons.OK, MessageBoxIcon.Error);
                         }
                     }
                     catch (Exception ex)
                     {
-                        MessageBox.Show($"Error cancelling booking: {ex.Message}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                        MessageBox.Show($"Error cancelling booking: {ex.Message}", "Error", 
+                                      MessageBoxButtons.OK, MessageBoxIcon.Error);
                     }
                 }
             }

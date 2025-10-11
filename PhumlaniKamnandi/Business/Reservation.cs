@@ -12,6 +12,7 @@ namespace PhumlaniKamnandi.Business
         public DateTime CheckOutDate { get; set; }
         public string Status { get; set; }   // unconfirmed, cancelled, confirmed
         public DateTime DateBooked { get; set; }
+        
 
         public Reservation() { }
 
@@ -23,5 +24,8 @@ namespace PhumlaniKamnandi.Business
             Status = status;
             DateBooked = dateBooked;
         }
+
+
+        
     }
 }

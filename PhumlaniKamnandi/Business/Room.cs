@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -10,12 +11,13 @@ namespace PhumlaniKamnandi.Business
 
 
     // ========== Rooms ==========
-    internal class Room
+    public class Room
     {
         public int RoomID { get; set; }
         public int AccountID { get; set; }
         public bool IsOccupied { get; set; }
-        public string SuiteType { get; set; }   // standard, deluxe, executive, family, presidential
+        public string SuiteType { get; set; }   // standard, deluxe
+
 
         public Room() { }
 
@@ -25,9 +27,9 @@ namespace PhumlaniKamnandi.Business
             IsOccupied = isOccupied;
             SuiteType = suiteType;
         }
+        
+
+
     }
-
-
-
 }
 
