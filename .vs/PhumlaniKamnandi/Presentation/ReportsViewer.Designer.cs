@@ -47,6 +47,8 @@ namespace PhumlaniKamnandi.Presentation
             // pnlMain
             // 
             this.pnlMain.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(248)))), ((int)(((byte)(250)))), ((int)(((byte)(252)))));
+            this.btnShowChart = new System.Windows.Forms.Button();
+            this.pnlMain.Controls.Add(this.btnShowChart);
             this.pnlMain.Controls.Add(this.btnExport);
             this.pnlMain.Controls.Add(this.btnClose);
             this.pnlMain.Controls.Add(this.dgvReport);
@@ -56,6 +58,21 @@ namespace PhumlaniKamnandi.Presentation
             this.pnlMain.Name = "pnlMain";
             this.pnlMain.Size = new System.Drawing.Size(1029, 640);
             this.pnlMain.TabIndex = 0;
+            // 
+            // btnShowChart
+            // 
+            this.btnShowChart.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(34)))), ((int)(((byte)(197)))), ((int)(((byte)(94)))));
+            this.btnShowChart.FlatAppearance.BorderSize = 0;
+            this.btnShowChart.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
+            this.btnShowChart.Font = new System.Drawing.Font("Segoe UI", 10F);
+            this.btnShowChart.ForeColor = System.Drawing.Color.White;
+            this.btnShowChart.Location = new System.Drawing.Point(450, 565);
+            this.btnShowChart.Name = "btnShowChart";
+            this.btnShowChart.Size = new System.Drawing.Size(137, 43);
+            this.btnShowChart.TabIndex = 4;
+            this.btnShowChart.Text = "Show Chart";
+            this.btnShowChart.UseVisualStyleBackColor = false;
+            this.btnShowChart.Click += new System.EventHandler(this.btnShowChart_Click);
             // 
             // btnExport
             // 
@@ -106,7 +123,7 @@ namespace PhumlaniKamnandi.Presentation
             this.dgvReport.RowHeadersWidth = 51;
             this.dgvReport.RowTemplate.Height = 29;
             this.dgvReport.SelectionMode = System.Windows.Forms.DataGridViewSelectionMode.FullRowSelect;
-            this.dgvReport.Size = new System.Drawing.Size(960, 405);
+            this.dgvReport.Size = new System.Drawing.Size(960, 380);
             this.dgvReport.TabIndex = 1;
             // 
             // pnlHeader
@@ -166,6 +183,7 @@ namespace PhumlaniKamnandi.Presentation
         #endregion
 
         private System.Windows.Forms.Panel pnlMain;
+        private System.Windows.Forms.Button btnShowChart;
         private System.Windows.Forms.Button btnExport;
         private System.Windows.Forms.Button btnClose;
         private System.Windows.Forms.DataGridView dgvReport;
