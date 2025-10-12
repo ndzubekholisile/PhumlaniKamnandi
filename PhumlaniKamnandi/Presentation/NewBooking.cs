@@ -251,7 +251,7 @@ namespace PhumlaniKamnandi.Presentation
                 // Create reservation
                 var reservation = new Reservation
                 {
-                    ReservationID=resid,
+                    ReservationID=resid+1,
                     BookingID = -1, // Ensure proper linking
                     CheckInDate = dtpCheckIn.Value,
                     CheckOutDate = dtpCheckOut.Value,
