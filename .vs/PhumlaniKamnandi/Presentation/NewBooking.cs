@@ -59,6 +59,9 @@ namespace PhumlaniKamnandi.Presentation
             // This will disable the confirm button initially
             btnConfirmBooking.Enabled = false;
 
+            // Set default radio button selection to help user get started
+            rbExistingGuest.Checked = true;
+
             UpdateTotalCost();
         }
 
@@ -199,10 +202,9 @@ namespace PhumlaniKamnandi.Presentation
                     guest = selectedGuest;
                 }
 
-                // Create reservation
+                // Create reservation (BookingID will be set in BookerController after guest is saved)
                 var reservation = new Reservation
                 {
-                    BookingID = guest.BookingID, // Ensure proper linking
                     CheckInDate = dtpCheckIn.Value,
                     CheckOutDate = dtpCheckOut.Value,
                     Status = "confirmed",

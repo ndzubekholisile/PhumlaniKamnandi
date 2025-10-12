@@ -180,10 +180,13 @@ namespace PhumlaniKamnandi.Business
             InitializeControllers();
             try
             {
-                // Add guest first
+                // Add guest first to get the BookingID
                 guestController.DataMaintenance(guest, DB.DBOperation.Add);
                 if (!guestController.FinalizeChanges(guest))
                     return false;
+
+                // Now set the reservation's BookingID to match the guest's BookingID
+                reservation.BookingID = guest.BookingID;
 
                 // Add reservation
                 reservationController.DataMaintenance(reservation, DB.DBOperation.Add);
