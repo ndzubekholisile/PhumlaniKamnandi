@@ -20,6 +20,7 @@ namespace PhumlaniKamnandi.Presentation
         private RoomController roomController;
         private BookerController bookerController;
         private Guest selectedGuest;
+        private List<Guest> bookingGuests;
         private bool isAvailabilityChecked = false;
 
         public NewBooking()
@@ -52,15 +53,15 @@ namespace PhumlaniKamnandi.Presentation
             dtpCheckIn.Value = DateTime.Today.AddDays(1);
             dtpCheckOut.Value = DateTime.Today.AddDays(2);
 
+            // Initialize guest list
+            bookingGuests = new List<Guest>();
+
             // This will initially hide the guest details section
             pnlGuestDetails.Visible = false;
             pnlConfirmation.Visible = false;
 
             // This will disable the confirm button initially
             btnConfirmBooking.Enabled = false;
-
-            // Set default radio button selection to help user get started
-            rbExistingGuest.Checked = true;
 
             UpdateTotalCost();
         }
@@ -87,6 +88,10 @@ namespace PhumlaniKamnandi.Presentation
                 txtSelectedGuest.Text = "";
                 selectedGuest = null;
                 btnFindGuest.Enabled = true;
+                
+                // Clear existing guest list when switching to existing guest mode
+                bookingGuests.Clear();
+                UpdateGuestList();
                 CheckBookingReadiness();
             }
         }
@@ -99,6 +104,10 @@ namespace PhumlaniKamnandi.Presentation
                 txtSelectedGuest.Text = "";
                 selectedGuest = null;
                 btnFindGuest.Enabled = false;
+                
+                // Clear existing guest list when switching to new guest mode
+                bookingGuests.Clear();
+                UpdateGuestList();
                 CheckBookingReadiness();
             }
         }
@@ -112,6 +121,13 @@ namespace PhumlaniKamnandi.Presentation
                 if (selectedGuest != null)
                 {
                     txtSelectedGuest.Text = $"{selectedGuest.Name} - {selectedGuest.Telephone}";
+                    
+                    // Add selected guest to the booking guests list
+                    if (!bookingGuests.Any(g => g.GuestID == selectedGuest.GuestID))
+                    {
+                        bookingGuests.Add(selectedGuest);
+                        UpdateGuestList();
+                    }
                 }
             }
             CheckBookingReadiness();
@@ -163,16 +179,53 @@ namespace PhumlaniKamnandi.Presentation
 
             if (rbExistingGuest.Checked)
             {
-                isGuestSelected = selectedGuest != null;
+                isGuestSelected = selectedGuest != null || bookingGuests.Count > 0;
             }
             else if (rbNewGuest.Checked)
             {
-                // Use ValidationHelper for proper validation
-                isGuestSelected = ValidationHelper.IsValidName(txtGuestName.Text) &&
-                                ValidationHelper.IsValidPhoneNumber(txtTelephone.Text);
+                // Check if we have at least one guest in the list or valid current guest data
+                isGuestSelected = bookingGuests.Count > 0 || 
+                                (ValidationHelper.IsValidName(txtGuestName.Text) &&
+                                 ValidationHelper.IsValidPhoneNumber(txtTelephone.Text));
             }
 
             btnConfirmBooking.Enabled = isAvailabilityChecked && isGuestSelected;
+        }
+
+        private void UpdateGuestList()
+        {
+            try
+            {
+                var guestData = bookingGuests.Select((g, index) => new
+                {
+                    No = index + 1,
+                    Name = g.Name,
+                    Telephone = g.Telephone,
+                    IsPrimary = index == 0 ? "Yes" : "No"
+                }).ToList();
+
+                dgvBookingGuests.DataSource = guestData;
+                
+                // Configure columns
+                if (dgvBookingGuests.Columns.Count > 0)
+                {
+                    dgvBookingGuests.Columns["No"].HeaderText = "#";
+                    dgvBookingGuests.Columns["No"].Width = 30;
+                    dgvBookingGuests.Columns["Name"].HeaderText = "Name";
+                    dgvBookingGuests.Columns["Name"].Width = 100;
+                    dgvBookingGuests.Columns["Telephone"].HeaderText = "Phone";
+                    dgvBookingGuests.Columns["Telephone"].Width = 80;
+                    dgvBookingGuests.Columns["IsPrimary"].HeaderText = "Primary";
+                    dgvBookingGuests.Columns["IsPrimary"].Width = 60;
+                }
+
+                lblGuestCount.Text = $"Total Guests: {bookingGuests.Count}";
+                btnRemoveSelectedGuest.Enabled = bookingGuests.Count > 1;
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Error updating guest list: {ex.Message}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
         }
 
         private void btnConfirmBooking_Click(object sender, EventArgs e)
@@ -182,27 +235,47 @@ namespace PhumlaniKamnandi.Presentation
 
             try
             {
-                Guest guest;
+                List<Guest> guestsToBook = new List<Guest>();
 
                 if (rbNewGuest.Checked)
                 {
-                    // Create new guest with validation
-                    guest = new Guest
+                    // Add current guest form data if valid
+                    if (ValidationHelper.IsValidName(txtGuestName.Text) && 
+                        ValidationHelper.IsValidPhoneNumber(txtTelephone.Text))
                     {
-                        Name = ValidationHelper.SanitizeInput(txtGuestName.Text.Trim()),
-                        Telephone = txtTelephone.Text.Trim(),
-                        AddressLine1 = ValidationHelper.SanitizeInput(txtAddress1.Text.Trim()),
-                        AddressLine2 = ValidationHelper.SanitizeInput(txtAddress2.Text.Trim()),
-                        PostalCode = txtPostalCode.Text.Trim(),
-                        DateBooked = DateTime.Now
-                    };
+                        var currentGuest = new Guest
+                        {
+                            Name = ValidationHelper.SanitizeInput(txtGuestName.Text.Trim()),
+                            Telephone = txtTelephone.Text.Trim(),
+                            AddressLine1 = ValidationHelper.SanitizeInput(txtAddress1.Text.Trim()),
+                            AddressLine2 = ValidationHelper.SanitizeInput(txtAddress2.Text.Trim()),
+                            PostalCode = txtPostalCode.Text.Trim(),
+                            DateBooked = DateTime.Now
+                        };
+                        
+                        // Check if this guest is not already in the list
+                        if (!bookingGuests.Any(g => g.Name == currentGuest.Name && g.Telephone == currentGuest.Telephone))
+                        {
+                            bookingGuests.Insert(0, currentGuest); // Make it the primary guest
+                        }
+                    }
+                    
+                    guestsToBook = bookingGuests;
                 }
                 else
                 {
-                    guest = selectedGuest;
+                    // Use existing guests
+                    guestsToBook = bookingGuests.Count > 0 ? bookingGuests : new List<Guest> { selectedGuest };
                 }
 
-                // Create reservation (BookingID will be set in BookerController after guest is saved)
+                if (guestsToBook.Count == 0)
+                {
+                    MessageBox.Show("Please add at least one guest to the booking.", "No Guests", 
+                                  MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                    return;
+                }
+
+                // Create reservation
                 var reservation = new Reservation
                 {
                     CheckInDate = dtpCheckIn.Value,
@@ -211,10 +284,20 @@ namespace PhumlaniKamnandi.Presentation
                     DateBooked = DateTime.Now
                 };
 
-                // Use booker controller for transaction
-                if (bookerController.CreateBooking(guest, reservation))
+                // Use booker controller for multi-guest transaction
+                bool success;
+                if (guestsToBook.Count == 1)
                 {
-                    MessageBox.Show("Booking confirmed successfully!", "Success", 
+                    success = bookerController.CreateBooking(guestsToBook[0], reservation);
+                }
+                else
+                {
+                    success = bookerController.CreateBookingWithMultipleGuests(guestsToBook, reservation);
+                }
+
+                if (success)
+                {
+                    MessageBox.Show($"Booking confirmed successfully with {guestsToBook.Count} guest(s)!", "Success", 
                                   MessageBoxButtons.OK, MessageBoxIcon.Information);
                     this.DialogResult = DialogResult.OK;
                     this.Close();
@@ -302,6 +385,103 @@ namespace PhumlaniKamnandi.Presentation
             CheckBookingReadiness();
         }
 
+        private void btnAddAnotherGuest_Click(object sender, EventArgs e)
+        {
+            try
+            {
+                // Validate current guest form data
+                if (!ValidationHelper.IsValidName(txtGuestName.Text))
+                {
+                    MessageBox.Show("Please enter a valid guest name before adding another guest.", "Validation Error", 
+                                  MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                    txtGuestName.Focus();
+                    return;
+                }
 
+                if (!ValidationHelper.IsValidPhoneNumber(txtTelephone.Text))
+                {
+                    MessageBox.Show("Please enter a valid telephone number before adding another guest.", "Validation Error", 
+                                  MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                    txtTelephone.Focus();
+                    return;
+                }
+
+                // Create guest from current form data
+                var newGuest = new Guest
+                {
+                    Name = ValidationHelper.SanitizeInput(txtGuestName.Text.Trim()),
+                    Telephone = txtTelephone.Text.Trim(),
+                    AddressLine1 = ValidationHelper.SanitizeInput(txtAddress1.Text.Trim()),
+                    AddressLine2 = ValidationHelper.SanitizeInput(txtAddress2.Text.Trim()),
+                    PostalCode = txtPostalCode.Text.Trim(),
+                    DateBooked = DateTime.Now
+                };
+
+                // Check for duplicates
+                if (bookingGuests.Any(g => g.Name == newGuest.Name && g.Telephone == newGuest.Telephone))
+                {
+                    MessageBox.Show("This guest is already in the booking list.", "Duplicate Guest", 
+                                  MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                    return;
+                }
+
+                // Add to guest list
+                bookingGuests.Add(newGuest);
+                UpdateGuestList();
+
+                // Clear form for next guest
+                txtGuestName.Clear();
+                txtTelephone.Clear();
+                txtAddress1.Clear();
+                txtAddress2.Clear();
+                txtPostalCode.Clear();
+                txtGuestName.Focus();
+
+                CheckBookingReadiness();
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Error adding guest: {ex.Message}", "Error", 
+                              MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
+        }
+
+        private void btnRemoveSelectedGuest_Click(object sender, EventArgs e)
+        {
+            try
+            {
+                if (dgvBookingGuests.SelectedRows.Count == 0)
+                {
+                    MessageBox.Show("Please select a guest to remove.", "No Selection", 
+                                  MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                    return;
+                }
+
+                if (bookingGuests.Count <= 1)
+                {
+                    MessageBox.Show("Cannot remove the last guest. At least one guest is required for booking.", 
+                                  "Cannot Remove", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                    return;
+                }
+
+                var selectedIndex = dgvBookingGuests.SelectedRows[0].Index;
+                var guestName = bookingGuests[selectedIndex].Name;
+
+                var result = MessageBox.Show($"Are you sure you want to remove {guestName} from this booking?", 
+                                           "Confirm Removal", MessageBoxButtons.YesNo, MessageBoxIcon.Question);
+
+                if (result == DialogResult.Yes)
+                {
+                    bookingGuests.RemoveAt(selectedIndex);
+                    UpdateGuestList();
+                    CheckBookingReadiness();
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Error removing guest: {ex.Message}", "Error", 
+                              MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
+        }
     }
 }

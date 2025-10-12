@@ -198,6 +198,52 @@ namespace PhumlaniKamnandi.Business
             }
         }
 
+        // Multi-guest booking creation
+        public bool CreateBookingWithMultipleGuests(List<Guest> guests, Reservation reservation)
+        {
+            InitializeControllers();
+            try
+            {
+                if (guests == null || guests.Count == 0)
+                    return false;
+
+                // Add primary guest first to get the BookingID
+                var primaryGuest = guests[0];
+                guestController.DataMaintenance(primaryGuest, DB.DBOperation.Add);
+                if (!guestController.FinalizeChanges(primaryGuest))
+                    return false;
+
+                // Set the reservation's BookingID to match the primary guest's BookingID
+                reservation.BookingID = primaryGuest.BookingID;
+
+                // Add reservation
+                reservationController.DataMaintenance(reservation, DB.DBOperation.Add);
+                if (!reservationController.FinalizeChanges(reservation))
+                    return false;
+
+                // Add additional guests with the same BookingID
+                for (int i = 1; i < guests.Count; i++)
+                {
+                    guests[i].BookingID = primaryGuest.BookingID;
+                    guests[i].DateBooked = primaryGuest.DateBooked;
+                    
+                    guestController.DataMaintenance(guests[i], DB.DBOperation.Add);
+                    if (!guestController.FinalizeChanges(guests[i]))
+                    {
+                        // If any additional guest fails, we still have a valid booking
+                        // Log the error but don't fail the entire operation
+                        continue;
+                    }
+                }
+
+                return true;
+            }
+            catch (Exception)
+            {
+                return false;
+            }
+        }
+
         public bool UpdateBooking(Guest guest, Reservation reservation)
         {
             InitializeControllers();
@@ -218,6 +264,45 @@ namespace PhumlaniKamnandi.Business
             }
         }
 
+        // Multi-guest booking update
+        public bool UpdateBookingWithMultipleGuests(List<Guest> guests, Reservation reservation)
+        {
+            InitializeControllers();
+            try
+            {
+                if (guests == null || guests.Count == 0)
+                    return false;
+
+                // Update reservation first
+                reservationController.DataMaintenance(reservation, DB.DBOperation.Edit);
+                if (!reservationController.FinalizeChanges(reservation))
+                    return false;
+
+                // Update all guests
+                foreach (var guest in guests)
+                {
+                    if (guest.GuestID > 0) // Existing guest
+                    {
+                        guestController.DataMaintenance(guest, DB.DBOperation.Edit);
+                        guestController.FinalizeChanges(guest);
+                    }
+                    else // New guest
+                    {
+                        guest.BookingID = reservation.BookingID;
+                        guest.DateBooked = DateTime.Now;
+                        guestController.DataMaintenance(guest, DB.DBOperation.Add);
+                        guestController.FinalizeChanges(guest);
+                    }
+                }
+
+                return true;
+            }
+            catch (Exception)
+            {
+                return false;
+            }
+        }
+
         public bool CancelBooking(int reservationId)
         {
             InitializeControllers();
@@ -229,6 +314,82 @@ namespace PhumlaniKamnandi.Business
                 reservation.Status = "cancelled";
                 reservationController.DataMaintenance(reservation, DB.DBOperation.Edit);
                 return reservationController.FinalizeChanges(reservation);
+            }
+            catch (Exception)
+            {
+                return false;
+            }
+        }
+
+        // Multi-guest support methods
+        public List<Guest> GetGuestsByBookingId(int bookingId)
+        {
+            InitializeControllers();
+            return guestController.AllGuests
+                .Where(g => g != null && g.BookingID == bookingId)
+                .ToList();
+        }
+
+        public BookingViewModel GetBookingWithAllGuests(int reservationId)
+        {
+            InitializeControllers();
+            var reservation = reservationController.Find(reservationId);
+            if (reservation == null) return null;
+
+            var guests = GetGuestsByBookingId(reservation.BookingID);
+            var primaryGuest = guests.FirstOrDefault();
+            
+            if (primaryGuest == null) return null;
+
+            return new BookingViewModel
+            {
+                ReservationID = reservation.ReservationID,
+                BookingID = reservation.BookingID,
+                GuestName = guests.Count > 1 ? 
+                    $"{primaryGuest.Name} (+{guests.Count - 1} more)" : 
+                    primaryGuest.Name,
+                CheckInDate = reservation.CheckInDate,
+                CheckOutDate = reservation.CheckOutDate,
+                Status = reservation.Status,
+                DateBooked = reservation.DateBooked
+            };
+        }
+
+        public bool RemoveGuestFromBooking(int guestId)
+        {
+            InitializeControllers();
+            try
+            {
+                var guest = guestController.FindByGuestId(guestId);
+                if (guest == null) return false;
+
+                // Check if this is the only guest for the booking
+                var allGuestsForBooking = GetGuestsByBookingId(guest.BookingID);
+                if (allGuestsForBooking.Count <= 1)
+                {
+                    // Cannot remove the last guest - would leave booking without guests
+                    return false;
+                }
+
+                guestController.DataMaintenance(guest, DB.DBOperation.Delete);
+                return guestController.FinalizeChanges(guest);
+            }
+            catch (Exception)
+            {
+                return false;
+            }
+        }
+
+        public bool AddGuestToExistingBooking(Guest guest, int bookingId)
+        {
+            InitializeControllers();
+            try
+            {
+                guest.BookingID = bookingId;
+                guest.DateBooked = DateTime.Now;
+                
+                guestController.DataMaintenance(guest, DB.DBOperation.Add);
+                return guestController.FinalizeChanges(guest);
             }
             catch (Exception)
             {

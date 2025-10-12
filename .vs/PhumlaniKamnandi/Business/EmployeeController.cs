@@ -15,6 +15,16 @@ namespace PhumlaniKamnandi.Business
         {
             hotelDB = new HotelDB();
             employees = hotelDB.AllEmployees ?? new Collection<Employee>();
+            
+            // Debug: Show employee count
+            System.Windows.Forms.MessageBox.Show($"Loaded {employees.Count} employees from database.", "Debug Info");
+            
+            // Debug: Show employee details if any exist
+            if (employees.Count > 0)
+            {
+                var emp = employees[0];
+                System.Windows.Forms.MessageBox.Show($"First employee: ID={emp.EmpID}, Name={emp.Name}, Username={emp.Username}, Role={emp.Role}", "Debug Info");
+            }
         }
         #endregion
 
@@ -114,22 +124,43 @@ namespace PhumlaniKamnandi.Business
         /// </summary>
         public Employee AuthenticateUser(string username, string password)
         {
+            // Debug: Show authentication attempt
+            System.Windows.Forms.MessageBox.Show($"Authentication attempt: Username='{username}', Password='{password}'", "Debug Info");
+            
             if (string.IsNullOrWhiteSpace(username) || string.IsNullOrWhiteSpace(password))
+            {
+                System.Windows.Forms.MessageBox.Show("Username or password is empty", "Debug Info");
                 return null;
+            }
 
             if (employees == null || employees.Count == 0)
+            {
+                System.Windows.Forms.MessageBox.Show("No employees loaded from database", "Debug Info");
                 return null;
+            }
 
             // Find employee by username and validate password
             var employee = employees.FirstOrDefault(e => 
                 e != null && e.MatchesUsername(username));
 
-            if (employee != null && employee.ValidatePassword(password))
+            if (employee == null)
             {
-                return employee;
+                System.Windows.Forms.MessageBox.Show($"No employee found with username '{username}'", "Debug Info");
+                return null;
             }
 
-            return null;
+            System.Windows.Forms.MessageBox.Show($"Found employee: Username='{employee.Username}', Password='{employee.Password}'", "Debug Info");
+
+            if (employee.ValidatePassword(password))
+            {
+                System.Windows.Forms.MessageBox.Show("Password validation successful", "Debug Info");
+                return employee;
+            }
+            else
+            {
+                System.Windows.Forms.MessageBox.Show("Password validation failed", "Debug Info");
+                return null;
+            }
         }
 
         /// <summary>

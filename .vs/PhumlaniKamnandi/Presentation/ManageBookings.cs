@@ -44,8 +44,8 @@ namespace PhumlaniKamnandi.Presentation
         {
             try
             {
-                // Use booker controller for complex operations
-                var bookings = bookerController.GetAllBookingsWithGuestInfo();
+                // Use booker controller for complex operations with multi-guest support
+                var bookings = GetAllBookingsWithMultiGuestInfo();
                 DisplayBookings(bookings);
                 UpdateButtonStates();
             }
@@ -53,6 +53,40 @@ namespace PhumlaniKamnandi.Presentation
             {
                 MessageBox.Show($"Error loading bookings: {ex.Message}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
+        }
+
+        private List<BookerController.BookingViewModel> GetAllBookingsWithMultiGuestInfo()
+        {
+            var reservations = reservationController.AllReservations;
+            var bookingViewModels = new List<BookerController.BookingViewModel>();
+
+            if (reservations == null) return bookingViewModels;
+
+            foreach (var reservation in reservations.Where(r => r != null))
+            {
+                var guests = bookerController.GetGuestsByBookingId(reservation.BookingID);
+                var primaryGuest = guests.FirstOrDefault();
+                
+                if (primaryGuest != null)
+                {
+                    var guestDisplayName = guests.Count > 1 ? 
+                        $"{primaryGuest.Name} (+{guests.Count - 1} more)" : 
+                        primaryGuest.Name;
+
+                    bookingViewModels.Add(new BookerController.BookingViewModel
+                    {
+                        ReservationID = reservation.ReservationID,
+                        BookingID = reservation.BookingID,
+                        GuestName = guestDisplayName,
+                        CheckInDate = reservation.CheckInDate,
+                        CheckOutDate = reservation.CheckOutDate,
+                        Status = reservation.Status,
+                        DateBooked = reservation.DateBooked
+                    });
+                }
+            }
+
+            return bookingViewModels;
         }
 
         private void DisplayBookings(List<BookerController.BookingViewModel> bookings)
@@ -106,9 +140,23 @@ namespace PhumlaniKamnandi.Presentation
 
             try
             {
-                // Use booker controller for search
-                var filteredBookings = bookerController.SearchBookings(guestSearch, bookingIdSearch);
-                DisplayBookings(filteredBookings);
+                // Get all bookings with multi-guest support and then filter
+                var allBookings = GetAllBookingsWithMultiGuestInfo();
+                var filteredBookings = allBookings.AsEnumerable();
+
+                if (!string.IsNullOrWhiteSpace(guestSearch))
+                {
+                    filteredBookings = filteredBookings.Where(b => 
+                        b.GuestName.ToLower().Contains(guestSearch.ToLower()));
+                }
+
+                if (!string.IsNullOrWhiteSpace(bookingIdSearch))
+                {
+                    filteredBookings = filteredBookings.Where(b => 
+                        b.BookingID.ToString().Contains(bookingIdSearch));
+                }
+
+                DisplayBookings(filteredBookings.ToList());
             }
             catch (Exception ex)
             {

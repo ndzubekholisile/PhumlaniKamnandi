@@ -1,4 +1,4 @@
-﻿using System.Windows.Forms;
+using System.Windows.Forms;
 using System.Drawing;
 
 namespace PhumlaniKamnandi.Presentation
@@ -47,6 +47,10 @@ namespace PhumlaniKamnandi.Presentation
             this.lblTelephone = new System.Windows.Forms.Label();
             this.txtGuestName = new System.Windows.Forms.TextBox();
             this.lblGuestName = new System.Windows.Forms.Label();
+            this.dgvBookingGuests = new System.Windows.Forms.DataGridView();
+            this.btnAddAnotherGuest = new System.Windows.Forms.Button();
+            this.btnRemoveSelectedGuest = new System.Windows.Forms.Button();
+            this.lblGuestCount = new System.Windows.Forms.Label();
             this.pnlGuestSelection = new System.Windows.Forms.Panel();
             this.btnFindGuest = new System.Windows.Forms.Button();
             this.txtSelectedGuest = new System.Windows.Forms.TextBox();
@@ -69,6 +73,7 @@ namespace PhumlaniKamnandi.Presentation
             this.pnlMain.SuspendLayout();
             this.pnlConfirmation.SuspendLayout();
             this.pnlGuestDetails.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.dgvBookingGuests)).BeginInit();
             this.pnlGuestSelection.SuspendLayout();
             this.pnlDates.SuspendLayout();
             this.SuspendLayout();
@@ -90,7 +95,7 @@ namespace PhumlaniKamnandi.Presentation
             this.pnlMain.Location = new System.Drawing.Point(0, 0);
             this.pnlMain.Margin = new System.Windows.Forms.Padding(3, 4, 3, 4);
             this.pnlMain.Name = "pnlMain";
-            this.pnlMain.Size = new System.Drawing.Size(800, 672);
+            this.pnlMain.Size = new System.Drawing.Size(800, 712);
             this.pnlMain.TabIndex = 0;
             // 
             // pnlConfirmation
@@ -100,7 +105,7 @@ namespace PhumlaniKamnandi.Presentation
             this.pnlConfirmation.Controls.Add(this.lblDepositRequired);
             this.pnlConfirmation.Controls.Add(this.lblTotalCost);
             this.pnlConfirmation.Controls.Add(this.lblTotalNights);
-            this.pnlConfirmation.Location = new System.Drawing.Point(57, 490);
+            this.pnlConfirmation.Location = new System.Drawing.Point(57, 530);
             this.pnlConfirmation.Margin = new System.Windows.Forms.Padding(3, 4, 3, 4);
             this.pnlConfirmation.Name = "pnlConfirmation";
             this.pnlConfirmation.Size = new System.Drawing.Size(685, 86);
@@ -153,10 +158,14 @@ namespace PhumlaniKamnandi.Presentation
             this.pnlGuestDetails.Controls.Add(this.lblTelephone);
             this.pnlGuestDetails.Controls.Add(this.txtGuestName);
             this.pnlGuestDetails.Controls.Add(this.lblGuestName);
+            this.pnlGuestDetails.Controls.Add(this.dgvBookingGuests);
+            this.pnlGuestDetails.Controls.Add(this.btnAddAnotherGuest);
+            this.pnlGuestDetails.Controls.Add(this.btnRemoveSelectedGuest);
+            this.pnlGuestDetails.Controls.Add(this.lblGuestCount);
             this.pnlGuestDetails.Location = new System.Drawing.Point(57, 298);
             this.pnlGuestDetails.Margin = new System.Windows.Forms.Padding(3, 4, 3, 4);
             this.pnlGuestDetails.Name = "pnlGuestDetails";
-            this.pnlGuestDetails.Size = new System.Drawing.Size(685, 160);
+            this.pnlGuestDetails.Size = new System.Drawing.Size(685, 220);
             this.pnlGuestDetails.TabIndex = 12;
             // 
             // txtPostalCode
@@ -238,21 +247,74 @@ namespace PhumlaniKamnandi.Presentation
             // txtGuestName
             // 
             this.txtGuestName.Font = new System.Drawing.Font("Segoe UI", 9F);
-            this.txtGuestName.Location = new System.Drawing.Point(515, 22);
+            this.txtGuestName.Location = new System.Drawing.Point(171, 155);
             this.txtGuestName.Margin = new System.Windows.Forms.Padding(3, 4, 3, 4);
             this.txtGuestName.Name = "txtGuestName";
-            this.txtGuestName.Size = new System.Drawing.Size(137, 27);
+            this.txtGuestName.Size = new System.Drawing.Size(228, 27);
             this.txtGuestName.TabIndex = 0;
             // 
             // lblGuestName
             // 
             this.lblGuestName.AutoSize = true;
             this.lblGuestName.Font = new System.Drawing.Font("Segoe UI", 9F);
-            this.lblGuestName.Location = new System.Drawing.Point(435, 26);
+            this.lblGuestName.Location = new System.Drawing.Point(25, 155);
             this.lblGuestName.Name = "lblGuestName";
             this.lblGuestName.Size = new System.Drawing.Size(79, 20);
             this.lblGuestName.TabIndex = 9;
             this.lblGuestName.Text = "Full Name:";
+            // 
+            // dgvBookingGuests
+            // 
+            this.dgvBookingGuests.AllowUserToAddRows = false;
+            this.dgvBookingGuests.BackgroundColor = System.Drawing.Color.White;
+            this.dgvBookingGuests.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize;
+            this.dgvBookingGuests.Location = new System.Drawing.Point(435, 22);
+            this.dgvBookingGuests.Name = "dgvBookingGuests";
+            this.dgvBookingGuests.ReadOnly = true;
+            this.dgvBookingGuests.RowHeadersWidth = 51;
+            this.dgvBookingGuests.SelectionMode = System.Windows.Forms.DataGridViewSelectionMode.FullRowSelect;
+            this.dgvBookingGuests.Size = new System.Drawing.Size(230, 120);
+            this.dgvBookingGuests.TabIndex = 10;
+            // 
+            // btnAddAnotherGuest
+            // 
+            this.btnAddAnotherGuest.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(34)))), ((int)(((byte)(197)))), ((int)(((byte)(94)))));
+            this.btnAddAnotherGuest.FlatAppearance.BorderSize = 0;
+            this.btnAddAnotherGuest.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
+            this.btnAddAnotherGuest.Font = new System.Drawing.Font("Segoe UI", 8F);
+            this.btnAddAnotherGuest.ForeColor = System.Drawing.Color.White;
+            this.btnAddAnotherGuest.Location = new System.Drawing.Point(435, 150);
+            this.btnAddAnotherGuest.Name = "btnAddAnotherGuest";
+            this.btnAddAnotherGuest.Size = new System.Drawing.Size(100, 25);
+            this.btnAddAnotherGuest.TabIndex = 11;
+            this.btnAddAnotherGuest.Text = "Add Another";
+            this.btnAddAnotherGuest.UseVisualStyleBackColor = false;
+            this.btnAddAnotherGuest.Click += new System.EventHandler(this.btnAddAnotherGuest_Click);
+            // 
+            // btnRemoveSelectedGuest
+            // 
+            this.btnRemoveSelectedGuest.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(239)))), ((int)(((byte)(68)))), ((int)(((byte)(68)))));
+            this.btnRemoveSelectedGuest.FlatAppearance.BorderSize = 0;
+            this.btnRemoveSelectedGuest.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
+            this.btnRemoveSelectedGuest.Font = new System.Drawing.Font("Segoe UI", 8F);
+            this.btnRemoveSelectedGuest.ForeColor = System.Drawing.Color.White;
+            this.btnRemoveSelectedGuest.Location = new System.Drawing.Point(545, 150);
+            this.btnRemoveSelectedGuest.Name = "btnRemoveSelectedGuest";
+            this.btnRemoveSelectedGuest.Size = new System.Drawing.Size(120, 25);
+            this.btnRemoveSelectedGuest.TabIndex = 12;
+            this.btnRemoveSelectedGuest.Text = "Remove Selected";
+            this.btnRemoveSelectedGuest.UseVisualStyleBackColor = false;
+            this.btnRemoveSelectedGuest.Click += new System.EventHandler(this.btnRemoveSelectedGuest_Click);
+            // 
+            // lblGuestCount
+            // 
+            this.lblGuestCount.AutoSize = true;
+            this.lblGuestCount.Font = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Bold);
+            this.lblGuestCount.Location = new System.Drawing.Point(435, 185);
+            this.lblGuestCount.Name = "lblGuestCount";
+            this.lblGuestCount.Size = new System.Drawing.Size(113, 20);
+            this.lblGuestCount.TabIndex = 13;
+            this.lblGuestCount.Text = "Total Guests: 0";
             // 
             // pnlGuestSelection
             // 
@@ -416,7 +478,7 @@ namespace PhumlaniKamnandi.Presentation
             this.lblStep3.AutoSize = true;
             this.lblStep3.Font = new System.Drawing.Font("Segoe UI", 12F, System.Drawing.FontStyle.Bold);
             this.lblStep3.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(59)))), ((int)(((byte)(130)))), ((int)(((byte)(246)))));
-            this.lblStep3.Location = new System.Drawing.Point(23, 458);
+            this.lblStep3.Location = new System.Drawing.Point(12, 638);
             this.lblStep3.Name = "lblStep3";
             this.lblStep3.Size = new System.Drawing.Size(217, 28);
             this.lblStep3.TabIndex = 5;
@@ -451,7 +513,7 @@ namespace PhumlaniKamnandi.Presentation
             this.btnConfirmBooking.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
             this.btnConfirmBooking.Font = new System.Drawing.Font("Segoe UI", 10F, System.Drawing.FontStyle.Bold);
             this.btnConfirmBooking.ForeColor = System.Drawing.Color.White;
-            this.btnConfirmBooking.Location = new System.Drawing.Point(515, 598);
+            this.btnConfirmBooking.Location = new System.Drawing.Point(515, 638);
             this.btnConfirmBooking.Margin = new System.Windows.Forms.Padding(3, 4, 3, 4);
             this.btnConfirmBooking.Name = "btnConfirmBooking";
             this.btnConfirmBooking.Size = new System.Drawing.Size(183, 42);
@@ -467,7 +529,7 @@ namespace PhumlaniKamnandi.Presentation
             this.btnCancel.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
             this.btnCancel.Font = new System.Drawing.Font("Segoe UI", 10F);
             this.btnCancel.ForeColor = System.Drawing.Color.White;
-            this.btnCancel.Location = new System.Drawing.Point(320, 598);
+            this.btnCancel.Location = new System.Drawing.Point(320, 638);
             this.btnCancel.Margin = new System.Windows.Forms.Padding(3, 4, 3, 4);
             this.btnCancel.Name = "btnCancel";
             this.btnCancel.Size = new System.Drawing.Size(137, 42);
@@ -492,7 +554,7 @@ namespace PhumlaniKamnandi.Presentation
             this.AutoScaleDimensions = new System.Drawing.SizeF(8F, 16F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.BackColor = System.Drawing.Color.White;
-            this.ClientSize = new System.Drawing.Size(800, 672);
+            this.ClientSize = new System.Drawing.Size(800, 712);
             this.Controls.Add(this.pnlMain);
             this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedDialog;
             this.Margin = new System.Windows.Forms.Padding(3, 4, 3, 4);
@@ -507,6 +569,7 @@ namespace PhumlaniKamnandi.Presentation
             this.pnlConfirmation.PerformLayout();
             this.pnlGuestDetails.ResumeLayout(false);
             this.pnlGuestDetails.PerformLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.dgvBookingGuests)).EndInit();
             this.pnlGuestSelection.ResumeLayout(false);
             this.pnlGuestSelection.PerformLayout();
             this.pnlDates.ResumeLayout(false);
@@ -533,6 +596,10 @@ namespace PhumlaniKamnandi.Presentation
         private System.Windows.Forms.Label lblTelephone;
         private System.Windows.Forms.TextBox txtGuestName;
         private System.Windows.Forms.Label lblGuestName;
+        private System.Windows.Forms.DataGridView dgvBookingGuests;
+        private System.Windows.Forms.Button btnAddAnotherGuest;
+        private System.Windows.Forms.Button btnRemoveSelectedGuest;
+        private System.Windows.Forms.Label lblGuestCount;
         private System.Windows.Forms.Panel pnlGuestSelection;
         private System.Windows.Forms.Button btnFindGuest;
         private System.Windows.Forms.TextBox txtSelectedGuest;

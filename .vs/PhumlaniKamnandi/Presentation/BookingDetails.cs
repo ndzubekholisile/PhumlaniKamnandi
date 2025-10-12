@@ -20,7 +20,9 @@ namespace PhumlaniKamnandi.Presentation
         private BookerController bookerController;
         private Reservation currentReservation;
         private Guest currentGuest;
+        private List<Guest> allGuests;
         private bool isEditMode = false;
+        private bool isAddingGuest = false;
 
         public BookingDetails(int reservationId)
         {
@@ -54,11 +56,13 @@ namespace PhumlaniKamnandi.Presentation
                 currentReservation = reservationController.Find(reservationId);
                 if (currentReservation != null)
                 {
-                    currentGuest = guestController.AllGuests.FirstOrDefault(g => g.BookingID == currentReservation.BookingID);
+                    // Load all guests for this booking
+                    allGuests = bookerController.GetGuestsByBookingId(currentReservation.BookingID);
+                    currentGuest = allGuests.FirstOrDefault();
 
                     if (currentGuest != null)
                     {
-                        // Populate guest details
+                        // Populate primary guest details
                         txtGuestName.Text = currentGuest.Name;
                         txtTelephone.Text = currentGuest.Telephone;
                         txtAddress1.Text = currentGuest.AddressLine1;
@@ -81,6 +85,9 @@ namespace PhumlaniKamnandi.Presentation
                         lblTotalNights.Text = $"Total Nights: {nights}";
                         lblTotalCost.Text = $"Total Cost: ${totalCost:F2}";
                         lblDeposit.Text = $"Deposit Paid: ${deposit:F2}";
+
+                        // Load guest list
+                        LoadGuestList();
                     }
                 }
                 else
@@ -95,15 +102,61 @@ namespace PhumlaniKamnandi.Presentation
             }
         }
 
+        private void LoadGuestList()
+        {
+            try
+            {
+                var guestData = allGuests.Select((g, index) => new
+                {
+                    No = index + 1,
+                    Name = g.Name,
+                    Telephone = g.Telephone,
+                    GuestID = g.GuestID,
+                    IsPrimary = index == 0 ? "Yes" : "No"
+                }).ToList();
+
+                dgvGuests.DataSource = guestData;
+                
+                // Configure columns
+                if (dgvGuests.Columns.Count > 0)
+                {
+                    dgvGuests.Columns["No"].HeaderText = "#";
+                    dgvGuests.Columns["No"].Width = 30;
+                    dgvGuests.Columns["Name"].HeaderText = "Guest Name";
+                    dgvGuests.Columns["Name"].Width = 120;
+                    dgvGuests.Columns["Telephone"].HeaderText = "Phone";
+                    dgvGuests.Columns["Telephone"].Width = 100;
+                    dgvGuests.Columns["IsPrimary"].HeaderText = "Primary";
+                    dgvGuests.Columns["IsPrimary"].Width = 60;
+                    dgvGuests.Columns["GuestID"].Visible = false;
+                }
+
+                lblGuestList.Text = $"All Guests ({allGuests.Count}):";
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Error loading guest list: {ex.Message}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
+        }
+
         private void SetReadOnlyMode(bool readOnly)
         {
-            txtGuestName.ReadOnly = readOnly;
-            txtTelephone.ReadOnly = readOnly;
-            txtAddress1.ReadOnly = readOnly;
-            txtAddress2.ReadOnly = readOnly;
-            txtPostalCode.ReadOnly = readOnly;
-            dtpCheckIn.Enabled = !readOnly;
-            dtpCheckOut.Enabled = !readOnly;
+            // Primary guest controls
+            bool primaryGuestReadOnly = readOnly || isAddingGuest;
+            txtGuestName.ReadOnly = primaryGuestReadOnly;
+            txtTelephone.ReadOnly = primaryGuestReadOnly;
+            txtAddress1.ReadOnly = primaryGuestReadOnly;
+            txtAddress2.ReadOnly = primaryGuestReadOnly;
+            txtPostalCode.ReadOnly = primaryGuestReadOnly;
+            dtpCheckIn.Enabled = !readOnly && !isAddingGuest;
+            dtpCheckOut.Enabled = !readOnly && !isAddingGuest;
+
+            // Multi-guest controls
+            btnAddGuest.Visible = !readOnly && !isAddingGuest;
+            btnRemoveGuest.Visible = !readOnly && !isAddingGuest && allGuests != null && allGuests.Count > 1;
+
+            // New guest entry controls
+            SetNewGuestEntryVisibility(isAddingGuest);
 
             if (readOnly)
             {
@@ -116,11 +169,19 @@ namespace PhumlaniKamnandi.Presentation
             else
             {
                 btnEdit.Text = "Cancel Edit";
-                btnSaveChanges.Visible = true;
-                btnCancelEdit.Visible = true;
-                lblEditMode.Text = "Edit Mode";
-                lblEditMode.ForeColor = Color.FromArgb(239, 68, 68);
+                btnSaveChanges.Visible = !isAddingGuest;
+                btnCancelEdit.Visible = !isAddingGuest;
+                lblEditMode.Text = isAddingGuest ? "Adding Guest" : "Edit Mode";
+                lblEditMode.ForeColor = isAddingGuest ? Color.FromArgb(59, 130, 246) : Color.FromArgb(239, 68, 68);
             }
+        }
+
+        private void SetNewGuestEntryVisibility(bool visible)
+        {
+            pnlNewGuestEntry.Visible = visible;
+            btnSaveNewGuest.Visible = visible;
+            btnCancelNewGuest.Visible = visible;
+            lblNewGuestTitle.Visible = visible;
         }
 
         private void btnEdit_Click(object sender, EventArgs e)
@@ -228,6 +289,164 @@ namespace PhumlaniKamnandi.Presentation
         private void btnClose_Click(object sender, EventArgs e)
         {
             this.Close();
+        }
+
+        private void btnAddGuest_Click(object sender, EventArgs e)
+        {
+            try
+            {
+                // Enter add guest mode
+                isAddingGuest = true;
+                SetReadOnlyMode(false);
+                
+                // Clear new guest entry fields
+                ClearNewGuestFields();
+                
+                // Focus on the first field
+                txtNewGuestName.Focus();
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Error entering add guest mode: {ex.Message}", "Error", 
+                              MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
+        }
+
+        private void ClearNewGuestFields()
+        {
+            txtNewGuestName.Clear();
+            txtNewGuestTelephone.Clear();
+            txtNewGuestAddress1.Clear();
+            txtNewGuestAddress2.Clear();
+            txtNewGuestPostalCode.Clear();
+        }
+
+        private void btnSaveNewGuest_Click(object sender, EventArgs e)
+        {
+            if (ValidateNewGuestInput())
+            {
+                try
+                {
+                    var newGuest = new Guest
+                    {
+                        Name = ValidationHelper.SanitizeInput(txtNewGuestName.Text.Trim()),
+                        Telephone = txtNewGuestTelephone.Text.Trim(),
+                        AddressLine1 = ValidationHelper.SanitizeInput(txtNewGuestAddress1.Text.Trim()),
+                        AddressLine2 = ValidationHelper.SanitizeInput(txtNewGuestAddress2.Text.Trim()),
+                        PostalCode = txtNewGuestPostalCode.Text.Trim(),
+                        DateBooked = DateTime.Now
+                    };
+
+                    if (bookerController.AddGuestToExistingBooking(newGuest, currentReservation.BookingID))
+                    {
+                        // Exit add guest mode
+                        isAddingGuest = false;
+                        SetReadOnlyMode(false);
+                        
+                        // Reload the booking details to refresh the guest list
+                        LoadBookingDetails(currentReservation.ReservationID);
+                        MessageBox.Show("Guest added successfully!", "Success", 
+                                      MessageBoxButtons.OK, MessageBoxIcon.Information);
+                    }
+                    else
+                    {
+                        MessageBox.Show("Failed to add guest. Please try again.", "Error", 
+                                      MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    }
+                }
+                catch (Exception ex)
+                {
+                    MessageBox.Show($"Error adding guest: {ex.Message}", "Error", 
+                                  MessageBoxButtons.OK, MessageBoxIcon.Error);
+                }
+            }
+        }
+
+        private void btnCancelNewGuest_Click(object sender, EventArgs e)
+        {
+            // Exit add guest mode without saving
+            isAddingGuest = false;
+            SetReadOnlyMode(false);
+            ClearNewGuestFields();
+        }
+
+        private bool ValidateNewGuestInput()
+        {
+            if (!ValidationHelper.IsValidName(txtNewGuestName.Text))
+            {
+                MessageBox.Show("Please enter a valid guest name.", "Validation Error", 
+                              MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                txtNewGuestName.Focus();
+                return false;
+            }
+
+            if (!ValidationHelper.IsValidPhoneNumber(txtNewGuestTelephone.Text))
+            {
+                MessageBox.Show("Please enter a valid telephone number.", "Validation Error", 
+                              MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                txtNewGuestTelephone.Focus();
+                return false;
+            }
+
+            if (!string.IsNullOrWhiteSpace(txtNewGuestPostalCode.Text) && 
+                !ValidationHelper.IsValidPostalCode(txtNewGuestPostalCode.Text))
+            {
+                MessageBox.Show("Please enter a valid postal code.", "Validation Error", 
+                              MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                txtNewGuestPostalCode.Focus();
+                return false;
+            }
+
+            return true;
+        }
+
+        private void btnRemoveGuest_Click(object sender, EventArgs e)
+        {
+            try
+            {
+                if (dgvGuests.SelectedRows.Count == 0)
+                {
+                    MessageBox.Show("Please select a guest to remove.", "No Selection", 
+                                  MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                    return;
+                }
+
+                var selectedRow = dgvGuests.SelectedRows[0];
+                var guestId = (int)selectedRow.Cells["GuestID"].Value;
+                var guestName = selectedRow.Cells["Name"].Value.ToString();
+                var isPrimary = selectedRow.Cells["IsPrimary"].Value.ToString() == "Yes";
+
+                if (isPrimary)
+                {
+                    MessageBox.Show("Cannot remove the primary guest. To change the primary guest, edit their details instead.", 
+                                  "Cannot Remove Primary Guest", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                    return;
+                }
+
+                var result = MessageBox.Show($"Are you sure you want to remove {guestName} from this booking?", 
+                                           "Confirm Removal", MessageBoxButtons.YesNo, MessageBoxIcon.Question);
+
+                if (result == DialogResult.Yes)
+                {
+                    if (bookerController.RemoveGuestFromBooking(guestId))
+                    {
+                        // Reload the booking details to refresh the guest list
+                        LoadBookingDetails(currentReservation.ReservationID);
+                        MessageBox.Show("Guest removed successfully!", "Success", 
+                                      MessageBoxButtons.OK, MessageBoxIcon.Information);
+                    }
+                    else
+                    {
+                        MessageBox.Show("Failed to remove guest. Please try again.", "Error", 
+                                      MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Error removing guest: {ex.Message}", "Error", 
+                              MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
         }
     }
 }
