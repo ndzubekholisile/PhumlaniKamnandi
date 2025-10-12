@@ -18,14 +18,14 @@ CREATE TABLE [dbo].Room (
 
 -- Table: Booker
 CREATE TABLE [dbo].Booker (
-    bookingID INT PRIMARY KEY IDENTITY(1,1),
+    bookingID INT PRIMARY KEY NOT NULL,
     num_of_people_expected INT NOT NULL
 );
 
 -- Table: Reservation
 CREATE TABLE [dbo].Reservation (
-    reservationID INT PRIMARY KEY IDENTITY(1,1),
-    bookingID INT,
+    reservationID INT PRIMARY KEY NOT NULL,
+    bookingID INT NOT NULL,
     check_in_date DATE NOT NULL,
     check_out_date DATE NOT NULL,
     status VARCHAR(20) DEFAULT 'unconfirmed' CHECK (status IN ('unconfirmed','cancelled','confirmed')),
@@ -35,7 +35,7 @@ CREATE TABLE [dbo].Reservation (
 
 -- Table: Guest
 CREATE TABLE [dbo].Guest (
-    guestID INT PRIMARY KEY IDENTITY(1,1),
+    guestID INT PRIMARY KEY NOT NULL,
     bookingID INT,
     name VARCHAR(100) NOT NULL,
     telephone VARCHAR(20),
