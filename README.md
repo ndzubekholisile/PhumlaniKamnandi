@@ -1,73 +1,37 @@
-Phumlani Kamnandi 🏨
+# Phumlani Kamnandi 🏨  
+*A Hotel Management System*
 
-A Hotel Management System
+## Overview
+**Phumlani Kamnandi** is a hotel management system designed to streamline and automate core hotel operations.  
+The system allows hotel staff and agents to manage guests, monitor room availability, handle bookings, and generate reports efficiently.
 
-Overview
+## Features
+- Add, update, and manage guest records
+- Monitor room availability and vacancy status
+- Book rooms and modify existing bookings
+- Allow agents to book rooms on behalf of guests
+- Generate month-end operational reports
+- Centralized management of hotel data
 
-Phumlani Kamnandi is a hotel management system designed to streamline daily hotel operations.
-It enables hotel staff and agents to efficiently manage guests, room availability, bookings, and reports from a single platform.
+## System Functionality
+- Real-time tracking of occupied and vacant rooms  
+- Supports both staff and agent-based bookings  
+- Maintains structured guest and booking records  
+- Produces summarized reports for management review  
 
-Features
+## Use Cases
+- Front desk operations and guest check-ins
+- Hotel management occupancy monitoring
+- Travel agents booking accommodations for guests
 
-Guest management (add, update, view guests)
+## Project Status
+This project is under active development and can be extended with:
+- Payment and billing integration
+- Role-based access control
+- Analytics and reporting dashboards
+- Online reservation support
 
-Room and vacancy monitoring
-
-Room booking and booking modification
-
-Agent bookings on behalf of guests
-
-Month-end report generation
-
-Centralized overview of hotel operations
-
-System Capabilities
-
-Tracks occupied and vacant rooms in real time
-
-Supports direct staff bookings and third-party agent bookings
-
-Maintains structured booking and guest records
-
-Generates summarized operational reports for management review
-
-Use Cases
-
-Front-desk staff managing daily check-ins and check-outs
-
-Hotel managers monitoring occupancy and performance
-
-Agents booking rooms for guests without direct access
-
-Project Status
-
-This project is actively developed and can be extended with:
-
-Payment processing
-
-User roles and permissions
-
-Analytics dashboards
-
-Online booking integration
-
-Getting Started
-
-Clone the repository:
-
-git clone https://github.com/your-username/phumlani-kamnandi.git
-
-
-Open the project in your preferred IDE
-
-Configure the database and environment settings
-
-Run the application
-
-Name Meaning
-
-Phumlani Kamnandi roughly translates to “Live Comfortably”, reflecting the system’s goal of smooth hotel operations and guest satisfaction.
-
-Author
-
-Kholisile Ndzube
+## Getting Started
+1. Clone the repository:
+   ```bash
+   git clone https://github.com/your-username/phumlani-kamnandi.git
