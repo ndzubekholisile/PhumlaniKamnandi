@@ -34,4 +34,4 @@ This project is under active development and can be extended with:
 ## Getting Started
 1. Clone the repository:
    ```bash
-   git clone https://github.com/your-username/phumlani-kamnandi.git
+   git clone github.com:ndzubekholisile/PhumlaniKamnandi.git
